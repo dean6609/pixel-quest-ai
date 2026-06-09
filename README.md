@@ -148,7 +148,6 @@ pixel-quest-ai/
 
 ---
 
-## 📜 Licencia y Notas
+## 📜 Derechos y Notas
 
-*   **Legado**: Los archivos `.zip` (`legacy_html_templates.zip`, `legacy_semantic_search.zip`) en el proyecto contienen código de iteraciones anteriores. Se preservan como referencia y no afectan la aplicación actual.
-*   **Derechos**: Este es un proyecto personal. El wiki de Pixel Quest y todos los datos/imágenes del juego son propiedad exclusiva de sus respectivos creadores.
+Este es un proyecto creado por la comunidad. El wiki de Pixel Quest y todos los datos, nombres e imágenes del juego son propiedad exclusiva de sus respectivos creadores. No se incluye ninguna licencia formal de código abierto en este repositorio.
