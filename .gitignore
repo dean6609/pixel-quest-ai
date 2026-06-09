@@ -5,8 +5,7 @@
 
 # ─── Generated / Large Data Files ─────────────────────────────────────────────
 # The data is fetched via sync; commit only if intentional
-data/items.json
-data/last_sync.json
+data/*.json
 
 # ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
