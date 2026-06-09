@@ -4,129 +4,110 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-
-    --primary: 215 90% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 215 15% 30%;
-
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 45%;
-
-    --accent: 210 20% 96%;
-    --accent-foreground: 215 15% 30%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 215 90% 50%;
-
-    --radius: 0.75rem;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   }
 
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 20% 98%;
-
-    --card: 224 71% 4%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 215 90% 60%;
-    --primary-foreground: 210 20% 98%;
-
-    --secondary: 220 15% 12%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 220 15% 12%;
-    --muted-foreground: 215 15% 65%;
-
-    --accent: 220 15% 12%;
-    --accent-foreground: 210 20% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 220 15% 15%;
-    --input: 220 15% 15%;
-    --ring: 215 90% 60%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-on-surface antialiased font-body-md overflow-x-hidden;
+    min-height: max(884px, 100dvh);
   }
 }
 
-/* Gemini style markdown overrides */
-.prose pre {
-  @apply bg-secondary text-secondary-foreground rounded-lg p-4 overflow-x-auto my-4 text-sm font-mono border border-border;
+@layer components {
+  .btn-press {
+    @apply transition-transform duration-[160ms];
+    transition-timing-function: var(--ease-out);
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
 }
 
-.prose code {
-  @apply bg-secondary px-1.5 py-0.5 rounded text-sm font-mono text-primary;
+/* Custom High-End Utility Classes */
+.glass-panel {
+  @apply bg-white/[0.02] backdrop-blur-2xl border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)];
 }
 
-.prose pre code {
-  @apply bg-transparent p-0 text-inherit;
+.doppelrand-shell {
+  @apply bg-white/[0.02] p-[6px] rounded-[2rem] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)];
 }
 
-.prose p {
-  @apply mb-4 leading-relaxed;
+.doppelrand-core {
+  @apply bg-[#0a0a0a] rounded-[calc(2rem-6px)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)];
 }
 
-.prose ul {
-  @apply list-disc list-inside mb-4 space-y-1;
+.doppelrand-bubble {
+  @apply bg-white/[0.02] p-[3px] rounded-[1.5rem] border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5)];
 }
 
-.prose ol {
-  @apply list-decimal list-inside mb-4 space-y-1;
+.doppelrand-bubble-core {
+  @apply bg-[#0a0a0a] rounded-[calc(1.5rem-3px)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)];
 }
 
-.prose h1, .prose h2, .prose h3 {
-  @apply font-semibold mt-6 mb-3 text-foreground;
+.particles-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, #0f0f11 0%, #050505 100%);
 }
 
-.prose h2 {
-  @apply text-xl;
-}
-
-.prose h3 {
-  @apply text-lg;
-}
-
-.prose a {
-  @apply text-primary hover:underline;
-}
-
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Prose Markdown styling */
+.prose pre {
+  @apply bg-surface-container text-on-surface rounded-xl p-4 overflow-x-auto my-4 text-sm font-mono border border-white/5 relative shadow-inner;
+}
+
+.prose code {
+  @apply bg-surface-container px-1.5 py-0.5 rounded text-sm font-mono text-primary font-medium border border-white/5;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit font-normal border-none;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed font-body-md;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-1 pl-2;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-4 space-y-1 pl-2;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  @apply mt-6 mb-3 font-h2 text-primary;
+}
+
+.prose h2 {
+  @apply text-h3;
+}
+
+.prose h3 {
+  @apply text-lg text-secondary;
+}
+
+.prose a {
+  @apply text-primary hover:text-secondary transition-colors underline decoration-1 underline-offset-4;
 }

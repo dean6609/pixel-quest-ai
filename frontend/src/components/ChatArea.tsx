@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Sparkles, AlertCircle, Bot } from 'lucide-react';
 import { marked } from 'marked';
 import { useChat } from '../context/ChatContext';
 
@@ -33,7 +32,6 @@ export default function ChatArea() {
       currentChatId = createNewChat();
     }
 
-    // Add user message to UI
     addMessage(currentChatId, { role: 'user', content: userMessage });
     setIsLoading(true);
 
@@ -43,7 +41,7 @@ export default function ChatArea() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: userMessage,
-          history: messages.slice(-10), // Send last 10 messages for context
+          history: messages.slice(-10),
         }),
       });
 
@@ -53,26 +51,26 @@ export default function ChatArea() {
       addMessage(currentChatId, { role: 'assistant', content: data.response });
     } catch (error) {
       console.error(error);
-      addMessage(currentChatId, { role: 'assistant', content: '⚠️ Ocurrió un error al conectar con el Oráculo.' });
+      addMessage(currentChatId, { role: 'assistant', content: '⚠️ The Oracle encountered a disturbance in the magical weave. Try again.' });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background relative max-w-4xl mx-auto w-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6">
+    <section className="flex-grow flex flex-col px-md md:px-lg pb-32 overflow-hidden h-full">
+      <div className="flex-grow overflow-y-auto space-y-xl py-lg pr-md w-full" id="chat-container">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-              <Sparkles className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 animate-in fade-in zoom-in-[0.97] duration-[400ms] ease-[var(--ease-out)] min-h-[50vh]">
+            <div className="w-24 h-24 mb-6 rounded-full bg-white/[0.02] border border-white/10 flex items-center justify-center relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+              <div className="absolute inset-0 bg-white/5 animate-pulse"></div>
+              <span className="material-symbols-outlined text-primary text-5xl relative z-10" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             </div>
-            <h1 className="text-2xl font-medium text-foreground mb-2">¿En qué puedo ayudarte hoy?</h1>
-            <p className="text-muted-foreground text-sm max-w-md">
-              Soy el Oráculo del Wiki de Pixel Quest. Pregúntame sobre builds, ítems, stats o dónde encontrar ciertos enemigos.
+            <h1 className="font-h1 text-h1 text-primary mb-4 text-center">Pixel Quest Oracle</h1>
+            <p className="text-on-surface-variant max-w-md mx-auto mb-8 leading-relaxed font-body-md">
+              Ask me about builds, items, stats, or where to find enemies in your adventure.
             </p>
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
               {[
                 "¿Cuál es el mejor arco para empezar?",
                 "¿Qué drops tiene el Slime King?",
@@ -82,99 +80,104 @@ export default function ChatArea() {
                 <button
                   key={i}
                   onClick={() => setInput(q)}
-                  className="text-left px-4 py-3 bg-secondary/50 hover:bg-secondary border border-border rounded-xl text-sm transition-colors text-foreground"
+                  className="bg-white/[0.04] backdrop-blur-md p-md rounded-[1.5rem] text-left transition-[background-color,border-color] duration-[150ms] group border border-white/10 hover:border-white/20 hover:bg-white/[0.08] btn-press animate-in fade-in zoom-in-[0.95] slide-in-from-bottom-2 duration-[250ms] ease-[var(--ease-out)]"
+                  style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
                 >
-                  {q}
+                  <p className="font-body-md text-on-surface-variant group-hover:text-primary transition-colors duration-[150ms]">{q}</p>
                 </button>
               ))}
             </div>
           </div>
         ) : (
           messages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-1">
-                  <Bot className="w-5 h-5 text-primary" />
+            <React.Fragment key={idx}>
+              {msg.role === 'user' ? (
+                <div className="flex flex-col items-end animate-in fade-in zoom-in-[0.95] slide-in-from-right-2 duration-[250ms] ease-[var(--ease-out)] mt-6">
+                  <div className="max-w-[80%] doppelrand-bubble rounded-tr-none">
+                    <div className="doppelrand-bubble-core p-4">
+                      <p className="font-body-md text-on-surface whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-label-caps text-on-surface-variant mt-xs mr-xs uppercase">Adventurer</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-start animate-in fade-in zoom-in-[0.95] slide-in-from-left-2 duration-[250ms] ease-[var(--ease-out)] mt-6">
+                  <div className="flex gap-md items-start max-w-full md:max-w-[90%]">
+                    <div className="w-10 h-10 shrink-0 bg-white/[0.02] rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden hidden md:flex shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                      <span className="material-symbols-outlined text-primary text-xl relative z-10" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                    </div>
+                    <div className="doppelrand-bubble rounded-tl-none w-full">
+                      <div className="doppelrand-bubble-core p-5 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/[0.02] pointer-events-none"></div>
+                        <div 
+                          className="font-body-md text-on-surface leading-relaxed relative z-10 prose prose-invert max-w-none" 
+                          dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) as string }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-label-caps text-on-surface-variant mt-xs ml-0 md:ml-14 uppercase">Oracle</span>
                 </div>
               )}
-
-              <div
-                className={`max-w-[85%] rounded-2xl px-5 py-3 ${
-                  msg.role === 'user'
-                    ? 'bg-secondary text-foreground'
-                    : 'bg-transparent text-foreground prose dark:prose-invert prose-sm md:prose-base'
-                }`}
-              >
-                {msg.role === 'user' ? (
-                  <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                ) : (
-                  <div dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) as string }} />
-                )}
-              </div>
-
-              {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-1">
-                  <User className="w-5 h-5 text-secondary-foreground" />
-                </div>
-              )}
-            </div>
+            </React.Fragment>
           ))
         )}
 
         {isLoading && (
-          <div className="flex gap-4 justify-start">
-             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-1">
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-              </div>
-            <div className="bg-transparent px-5 py-4 rounded-2xl flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="flex gap-md items-center ml-0 md:ml-14 animate-in fade-in zoom-in-[0.95] duration-[250ms] ease-[var(--ease-out)] mt-6">
+            <div className="flex gap-1">
+              <div className="w-1.5 h-1.5 bg-on-surface-variant rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-on-surface-variant rounded-full animate-bounce" style={{ animationDelay: '-0.15s' }}></div>
+              <div className="w-1.5 h-1.5 bg-on-surface-variant rounded-full animate-bounce" style={{ animationDelay: '-0.3s' }}></div>
             </div>
+            <span className="text-[10px] font-label-caps text-on-surface-variant uppercase">Oracle is manifesting an answer...</span>
           </div>
         )}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="h-4" />
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-gradient-to-t from-background via-background to-transparent pt-10">
-        <form
-          onSubmit={handleSubmit}
-          className="relative max-w-3xl mx-auto flex items-end gap-2 bg-secondary/80 focus-within:bg-secondary rounded-3xl border border-border px-4 py-3 shadow-sm transition-colors"
-        >
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            placeholder="Pregúntale al Oráculo..."
-            className="flex-1 bg-transparent border-0 outline-none resize-none max-h-32 min-h-[24px] py-1 text-foreground placeholder:text-muted-foreground"
-            rows={1}
-            style={{
-              height: 'auto',
-            }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-            }}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="p-2 bg-primary text-primary-foreground rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors shrink-0"
+      <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background to-transparent pt-10">
+        <div className="max-w-[800px] mx-auto px-md pb-md md:pb-xl">
+          <form
+            onSubmit={handleSubmit}
+            className="doppelrand-shell p-1.5 rounded-full flex items-center gap-2 transition-[border-color,box-shadow,background-color] duration-[250ms] ease-[var(--ease-out)] focus-within:ring-1 focus-within:ring-white/20 relative"
           >
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
-        <p className="text-center text-xs text-muted-foreground mt-3 pb-2">
-          La IA puede cometer errores. Verifica siempre en el juego.
-        </p>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Whisper to the Oracle..."
+              className="flex-grow bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder:text-on-surface-variant/50 px-md resize-none py-3 outline-none"
+              rows={1}
+              style={{ height: 'auto', maxHeight: '120px' }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="group flex items-center gap-3 bg-white/[0.04] text-on-surface font-label-caps text-label-caps pl-6 pr-1.5 py-1.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] btn-press disabled:opacity-50 disabled:cursor-not-allowed shrink-0 transition-[background-color,border-color,opacity] duration-[200ms] ease-out"
+            >
+              <span className="hidden md:inline font-bold text-primary group-hover:text-primary">Cast</span>
+              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-[transform,background-color] duration-[200ms] ease-[var(--ease-out)] group-hover:bg-white/10 group-hover:translate-x-1 group-hover:-translate-y-[1px] group-hover:scale-105">
+                <span className="material-symbols-outlined text-[16px] text-primary">send</span>
+              </div>
+            </button>
+          </form>
+          <p className="text-center text-[10px] text-on-surface-variant mt-2 font-label-caps">
+            The Oracle&apos;s visions may be imperfect. Always verify in the Realm.
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
