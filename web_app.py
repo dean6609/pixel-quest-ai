@@ -1,6 +1,6 @@
-"""Pixel Quest AI - Web Frontend (direct HTML, no Jinja2)."""
+"""Pixel Quest AI - Web Frontend (serving static Next.js export)."""
 import sys, os, json, logging, re
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Load environment variables from .env file (if present)
 try:
@@ -10,7 +10,8 @@ except ImportError:
     pass  # python-dotenv not installed; rely on system env vars
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Literal
 import uvicorn
@@ -52,16 +53,6 @@ class SearchRequest(BaseModel):
     tier: Optional[str] = ""
     item_type: Optional[str] = ""
     limit: Optional[int] = 20
-
-# Template path (read on each request for hot-reload)
-template_path = os.path.join(BASE, "templates", "index.html")
-
-def read_template() -> str:
-    """Read HTML template fresh on each request."""
-    if os.path.exists(template_path):
-        with open(template_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return "<h1>Template not found</h1>"
 
 # API endpoints
 @app.get("/api/stats")
@@ -217,11 +208,17 @@ def get_recent_changes(limit: int = 20):
         logger.error(f"Changes error: {e}")
         return JSONResponse({"changes": [], "total": 0, "error": str(e)})
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    return HTMLResponse(content=read_template())
+# Serve Next.js static files
+FRONTEND_DIR = os.path.join(BASE, "frontend", "out")
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+else:
+    logger.warning("Frontend build not found. Run `npm run build` in frontend directory.")
+    @app.get("/", response_class=HTMLResponse)
+    def index():
+        return HTMLResponse(content="<h1>Frontend build not found. Please build the Next.js app.</h1>")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     print(f"Pixel Quest AI running at http://localhost:{port}")
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run("web_app:app", host="0.0.0.0", port=port, log_level="info", reload=False)
