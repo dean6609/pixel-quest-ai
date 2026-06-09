@@ -3,14 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Sparkles, AlertCircle, Bot } from 'lucide-react';
 import { marked } from 'marked';
-
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+import { useChat } from '../context/ChatContext';
 
 export default function ChatArea() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { activeChatId, activeChat, createNewChat, addMessage } = useChat();
+  const messages = activeChat?.messages || [];
+  
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -30,9 +28,13 @@ export default function ChatArea() {
     const userMessage = input.trim();
     setInput('');
 
+    let currentChatId = activeChatId;
+    if (!currentChatId) {
+      currentChatId = createNewChat();
+    }
+
     // Add user message to UI
-    const newMessages: Message[] = [...messages, { role: 'user', content: userMessage }];
-    setMessages(newMessages);
+    addMessage(currentChatId, { role: 'user', content: userMessage });
     setIsLoading(true);
 
     try {
@@ -48,10 +50,10 @@ export default function ChatArea() {
       if (!response.ok) throw new Error('Error de red');
       const data = await response.json();
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      addMessage(currentChatId, { role: 'assistant', content: data.response });
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Ocurrió un error al conectar con el Oráculo.' }]);
+      addMessage(currentChatId, { role: 'assistant', content: '⚠️ Ocurrió un error al conectar con el Oráculo.' });
     } finally {
       setIsLoading(false);
     }

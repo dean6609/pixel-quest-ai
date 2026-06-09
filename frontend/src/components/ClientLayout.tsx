@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import ChatArea from './ChatArea';
 import RightSidebar from './RightSidebar';
 import { Menu, PanelRight } from 'lucide-react';
+import { ChatProvider } from '../context/ChatContext';
 
 export default function ClientLayout() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   return (
-    <>
+    <ChatProvider>
       {/* Top Mobile Bar */}
       <div className="absolute top-0 left-0 right-0 h-14 border-b border-border bg-background/80 backdrop-blur flex items-center justify-between px-4 z-10 md:hidden">
         <button className="p-2 hover:bg-secondary rounded-full">
@@ -45,6 +46,6 @@ export default function ClientLayout() {
         isOpen={rightSidebarOpen}
         onClose={() => setRightSidebarOpen(false)}
       />
-    </>
+    </ChatProvider>
   );
 }
