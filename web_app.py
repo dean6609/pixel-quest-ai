@@ -22,6 +22,8 @@ from pq_ai.deepseek_rag import ask_rag
 from pq_ai import extractor as wiki_extractor
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("huggingface_hub").setLevel(logging.WARNING)
 logger = logging.getLogger('web')
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -32,8 +34,6 @@ db = Database()
 loaded = db.load()
 search = SearchEngine()
 if loaded:
-    search.load_items()
-    search.build_index()
     logger.info(f"Loaded {len(db.items)} items")
 else:
     logger.warning("No database found! Run sync first")
@@ -105,64 +105,8 @@ def ask(req: AskRequest):
                     content = content[:2000] + "... [truncated]"
                 sanitized_history.append({"role": msg["role"], "content": content})
         
-        results = search.search(req.query, top_k=10)
-        relevant = []
-        for r in results:
-            d = r.item if hasattr(r, 'item') else r
-            if isinstance(d, dict): relevant.append(d)
-        
-        # Implement the "mentioned items" extraction logic:
-        # Scan the concatenated text of the history messages for item names from the database (case-insensitive check)
-        # Fetch the matched database items and merge them into the RAG context's relevant items
-        if sanitized_history:
-            history_text = " ".join([msg["content"] for msg in sanitized_history]).lower()
-            matched_items = []
-            for item in all_items:
-                name = item.get("name")
-                # Type safety: check isinstance(name, str) before string operations
-                if isinstance(name, str):
-                    name_lower = name.lower()
-                    # Substring Collision Fix: Use regex with word boundaries for exact phrase/name matching
-                    pattern = ""
-                    if name_lower and (name_lower[0].isalnum() or name_lower[0] == '_'):
-                        pattern += r"\b"
-                    pattern += re.escape(name_lower)
-                    if name_lower and (name_lower[-1].isalnum() or name_lower[-1] == '_'):
-                        pattern += r"\b"
-                    
-                    if re.search(pattern, history_text):
-                        matched_items.append(item)
-            
-            # Sub-phrase Collision Fix: Sort by name length descending and filter out substrings of longer matches
-            matched_items.sort(key=lambda x: len(x.get("name", "")), reverse=True)
-            filtered_matched = []
-            for item in matched_items:
-                name = item.get("name")
-                is_subphrase = False
-                for accepted in filtered_matched:
-                    accepted_name = accepted.get("name")
-                    if name.lower() in accepted_name.lower():
-                        is_subphrase = True
-                        break
-                if not is_subphrase:
-                    filtered_matched.append(item)
-            matched_items = filtered_matched
-            
-            # Context Starvation Fix: Prepend the history-mentioned items to relevant
-            seen_names = {item["name"].lower() for item in relevant if "name" in item and isinstance(item["name"], str)}
-            items_to_prepend = []
-            for item in matched_items:
-                name = item.get("name")
-                if name.lower() not in seen_names:
-                    items_to_prepend.append(item)
-                    seen_names.add(name.lower())
-            relevant = items_to_prepend + relevant
-
-        if not relevant:
-            relevant = all_items[:10]
-            
-        response = ask_rag(req.query, relevant, level=req.level, location=req.location, history=sanitized_history)
-        return JSONResponse({"response": response, "items_used": len(relevant)})
+        response = ask_rag(req.query, search, level=req.level, location=req.location, history=sanitized_history)
+        return JSONResponse({"response": response, "items_used": -1})
     except Exception as e:
         logger.error(f"Ask error: {e}")
         return JSONResponse({"response": f"Error: {e}", "items_used": 0})

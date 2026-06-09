@@ -1,91 +1,88 @@
-"""DeepSeek API integration for RAG."""
+"""DeepSeek API integration for RAG via Function Calling."""
 
 import os
 import json
 import logging
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# DeepSeek API configuration — key is loaded from environment variable
-# Set DEEPSEEK_API_KEY in your .env file or system environment before running.
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
-DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
-DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
-
-# Optional: use structured client
-try:
-    from openai import OpenAI
-    client = OpenAI(
-        api_key=DEEPSEEK_API_KEY,
-        base_url=DEEPSEEK_BASE_URL,
-    )
-    HAS_OPENAI = True
-except Exception as e:
-    logger.warning(f"OpenAI client not available: {e}")
-    client = None
-    HAS_OPENAI = False
-
-
-def query_deepseek(
-    messages: List[Dict[str, str]],
-    temperature: float = 0.3,
-    max_tokens: int = 2000,
-) -> Optional[str]:
-    """Query DeepSeek API with chat messages."""
-    if not HAS_OPENAI:
-        return "⚠️ DeepSeek API no está disponible en este momento."
-    
+def get_openai_client():
     try:
-        response = client.chat.completions.create(
-            model=DEEPSEEK_MODEL,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        return response.choices[0].message.content
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+        
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+    
+    if not api_key:
+        return None
+        
+    try:
+        from openai import OpenAI
+        return OpenAI(api_key=api_key, base_url=base_url)
     except Exception as e:
-        logger.error(f"DeepSeek API error: {e}")
-        return f"⚠️ Error al consultar la IA: {e}"
+        logger.warning(f"OpenAI client not available: {e}")
+        return None
 
+SYSTEM_PROMPT = """Eres el Oráculo del Wiki, un experto asesor de Pixel Quest — un MMORPG bullet-hell con permadeath.
 
-SYSTEM_PROMPT = """Eres el Oráculo del Wiki, un experto asesor de Pixel Quest — un MMORPG bullet-hell de Roblox con permadeath.
-
-Tu rol es recomendar objetos, builds y estrategias basándote en datos reales del wiki del juego.
-Eres un compañero de conversación: recuerdas lo que se ha hablado antes y construyes sobre ello.
+Tu rol es recomendar objetos, builds y estrategias basándote en datos reales del wiki.
+¡NO INVENTES OBJETOS! Si no conoces un objeto o no tienes datos suficientes, TIENES que usar la herramienta `search_database` para buscarlo.
+Si te preguntan por recomendaciones para empezar (ej. "arco inicial"), usa la herramienta para buscar por categoría (ej. "Bow") y filtra por Tiers bajos (ej. "T1" o "T2").
 
 ## REGLAS ESTRICTAS:
-1. Solo recomiendas objetos que existen en los datos proporcionados.
-2. Mantén coherencia con lo que dijiste antes en esta misma conversación. Si antes recomendaste un item, recuérdalo.
-3. Explica POR QUÉ un objeto es bueno (stats, pasivas, sinergias).
-4. Considera el nivel, zona disponible y estilo de juego del jugador.
-5. Si el usuario pregunta "¿y ese item?" o referencias vagas, usa el contexto anterior de la conversación para entender a qué se refiere.
+1. Solo recomiendas objetos que existen en los datos.
+2. Si el usuario pregunta algo general, usa la herramienta de búsqueda para obtener contexto antes de responder.
+3. Considera el nivel, zona disponible y estilo de juego del jugador si te lo proporcionan.
+4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos". 
 
 ## DATOS DEL JUEGO:
 - Tier: T0 (peor) → T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → LG → CORRUPTED (mejor)
 - Tipos de armas: Sword, Bow, Staff, Dagger, Axe, Fan
-- Tipos de armadura: Heavy, Leather, Robe + slots (Helmet, Boot, Gauntlet, etc.)
-- Accesorios: Ring, Pendant, Bracelet, Belt, Crown, Hat, Totem, etc.
-- Valor: moneda que se obtiene al morir (permadeath). Más valor bonus = más monedas.
-- Los objetos tienen requisitos de stats (SPD, STR, DEX, INT, etc.)
+- Tipos de armadura: Heavy Armor, Leather Armor, Robe Armor
+"""
 
-## COMPORTAMIENTO EN CONVERSACIÓN:
-- Si hay mensajes previos en esta conversación, considera todo ese contexto para dar respuestas coherentes.
-- Puedes referenciar recomendaciones anteriores: "Como te mencioné antes, X es bueno porque..."
-- Si la pregunta actual es una continuación obvia de la anterior, responde naturalmente como si fuera un chat.
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_database",
+            "description": "Busca objetos en el wiki de Pixel Quest.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Texto libre para buscar (nombres, descripciones)."
+                    },
+                    "tier": {
+                        "type": "string",
+                        "description": "Filtro de nivel exacto, ej. 'T1', 'T2', 'LG'."
+                    },
+                    "item_type": {
+                        "type": "string",
+                        "description": "Tipo de objeto general, ej. 'Primary Weapon', 'Armor', 'Accessory'."
+                    },
+                    "weapon_type": {
+                        "type": "string",
+                        "description": "Tipo de arma específica, ej. 'Bow', 'Sword', 'Staff'."
+                    }
+                }
+            }
+        }
+    }
+]
 
-## FORMATO DE RESPUESTA:
-Sé claro y conciso. Usa markdown con listas y negritas. Si recomiendas objetos, da el nombre exacto, tier y razón."""
-
-
-def build_context(items: List[dict], query: str, level: int = 0, location: str = "") -> str:
-    """Build a compact context from items for the RAG prompt."""
+def format_search_results(items: List[dict]) -> str:
+    """Format search results into a readable string for the LLM."""
     if not items:
-        return ""
+        return "No se encontraron objetos que coincidan con la búsqueda."
     
-    context_parts = [f"## Contexto ({len(items)} objetos relevantes):\n"]
-    
-    for item in items[:12]:  # Max 12 items to control token usage
+    parts = []
+    for item in items[:10]: # Max 10 items
         weapon_info = ""
         if item.get("weapon_stats"):
             ws = item["weapon_stats"]
@@ -97,37 +94,86 @@ def build_context(items: List[dict], query: str, level: int = 0, location: str =
         dropped = item.get("dropped_by", [])
         drop_str = f" | Drop: {', '.join(dropped[:3])}" if dropped else ""
         
-        loc_str = f" | Zona: {location}" if location else ""
+        itype = item.get('item_type', '?')
+        wtype = item.get('weapon_type', '')
+        type_str = f"{itype} - {wtype}" if wtype and wtype != itype else itype
         
-        context_parts.append(
-            f"- **{item.get('name', '?')}** [{item.get('tier', '?')}] "
-            f"({item.get('item_type', item.get('weapon_type', '?'))})"
-            f"{weapon_info}{passive_str}{drop_str}{loc_str}"
+        parts.append(
+            f"- {item.get('name', '?')} [{item.get('tier', '?')}] "
+            f"({type_str}){weapon_info}{passive_str}{drop_str}"
         )
+    return "\n".join(parts)
+
+def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", history: Optional[List[Dict[str, str]]] = None) -> str:
+    """Main RAG query function using Function Calling."""
+    client = get_openai_client()
+    if not client:
+        return "⚠️ DeepSeek API no está disponible en este momento. Revisa tu clave API."
     
-    return "\n".join(context_parts)
-
-
-def ask_rag(query: str, items: list, level: int = 0, location: str = "", history: Optional[List[Dict[str, str]]] = None) -> str:
-    """Main RAG query function."""
-    context = build_context(items, query, level, location)
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
-    user_prompt = f"""## Consulta del jugador:
-{query}
-
-{context if context else "⚠️ No se encontraron objetos relevantes en la base de datos."}
-
-## Nivel del jugador: {level if level else 'No especificado'}
-## Zona/Localización: {location if location else 'No especificada'}
-
-Basado en los datos anteriores, responde a la consulta del jugador de manera útil y precisa."""
-    
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-    ]
     if history:
         for turn in history:
             messages.append({"role": turn["role"], "content": turn["content"]})
+            
+    user_prompt = f"Consulta del jugador: {query}\n"
+    if level: user_prompt += f"Nivel: {level}\n"
+    if location: user_prompt += f"Zona: {location}\n"
+    
     messages.append({"role": "user", "content": user_prompt})
     
-    return query_deepseek(messages)
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    
+    try:
+        # First call to LLM, giving it the tool
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
+            temperature=0.3,
+            max_tokens=1000
+        )
+        
+        response_message = response.choices[0].message
+        
+        # Check if the model wants to call a function
+        if response_message.tool_calls:
+            messages.append(response_message) # Append the tool call itself
+            
+            for tool_call in response_message.tool_calls:
+                if tool_call.function.name == "search_database":
+                    args = json.loads(tool_call.function.arguments)
+                    
+                    search_results = search_engine.search(
+                        query=args.get("query", ""),
+                        tier_filter=args.get("tier"),
+                        type_filter=args.get("item_type"),
+                        weapon_type_filter=args.get("weapon_type"),
+                        top_k=10
+                    )
+                    
+                    tool_content = format_search_results(search_results)
+                    
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": "search_database",
+                        "content": tool_content
+                    })
+            
+            # Second call to LLM to get final answer after tools
+            final_response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=1500
+            )
+            return final_response.choices[0].message.content
+            
+        else:
+            return response_message.content
+            
+    except Exception as e:
+        logger.error(f"DeepSeek API error: {e}")
+        return f"⚠️ Error al consultar la IA: {e}"

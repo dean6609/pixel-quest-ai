@@ -16,7 +16,6 @@ ENEMIES_FILE = os.path.join(DATA_DIR, "enemies.json")
 LOCATIONS_FILE = os.path.join(DATA_DIR, "locations.json")
 RELATIONSHIPS_FILE = os.path.join(DATA_DIR, "relationships.json")
 LAST_SYNC_FILE = os.path.join(DATA_DIR, "last_sync.json")
-SEARCH_INDEX_FILE = os.path.join(DATA_DIR, "search_index.pkl")
 
 # Rate limiting
 REQUEST_DELAY = 0.3  # seconds between API requests

@@ -119,7 +119,6 @@ def get_recent_changes(limit: int = 50) -> list:
         "list": "recentchanges",
         "rcprop": "title|timestamp|ids|comment",
         "rclimit": min(limit, 500),
-        "rcnamespace": "0",  # Main namespace only
     }
     result = api_request(params)
     if not result:

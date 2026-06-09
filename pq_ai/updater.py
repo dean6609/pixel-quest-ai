@@ -74,13 +74,13 @@ class WikiUpdater:
             
             # Determine page type and parse accordingly
             if "PQ Item" in wikitext or "PQ_Item" in wikitext:
-                item = parser.parse_item_wikitext(wikitext, title)
+                item = parser.parse_item_wikitext(title, wikitext)
                 if item:
                     self.db.save_item(item)
                     logger.info(f"Synced item: {title}")
                     return True
             elif "PQ_Location" in wikitext or "PQ Location" in wikitext:
-                location = parser.parse_location_wikitext(wikitext, title)
+                location = parser.parse_location_wikitext(title, wikitext)
                 if location:
                     self.db.save_location(location)
                     logger.info(f"Synced location: {title}")
@@ -101,14 +101,14 @@ class WikiUpdater:
             else:
                 # Try parsing as item (most game pages use PQ_Item template)
                 if "{{PQ_Item" in wikitext or "{{PQ Item" in wikitext:
-                    item = parser.parse_item_wikitext(wikitext, title)
+                    item = parser.parse_item_wikitext(title, wikitext)
                     if item:
                         self.db.save_item(item)
                         logger.info(f"Synced item (auto-detected): {title}")
                         return True
                 
                 # Check if it's an enemy page
-                enemy_data = parser.parse_enemy_wikitext(wikitext, title)
+                enemy_data = parser.parse_enemy_wikitext(title, wikitext)
                 if enemy_data:
                     self.db.save_enemy(enemy_data)
                     logger.info(f"Synced enemy: {title}")
@@ -165,6 +165,9 @@ class WikiUpdater:
         now = datetime.now(timezone.utc).isoformat()
         self._save_last_sync(now)
         
+        # Actually save the database to JSON files
+        self.db.save()
+        
         logger.info(f"Full sync complete. Items: {len(self.db.items)}, "
                     f"Enemies: {len(self.db.enemies)}, "
                     f"Locations: {len(self.db.locations)}")
@@ -187,6 +190,9 @@ class WikiUpdater:
             self.db.build_relationships()
             now = datetime.now(timezone.utc).isoformat()
             self._save_last_sync(now)
+            
+            # Actually save the database to JSON files
+            self.db.save()
         
         return {
             "status": "updated" if updated > 0 else "no_changes",
