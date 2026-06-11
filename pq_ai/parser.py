@@ -68,49 +68,73 @@ def parse_item_wikitext(title: str, wikitext: str) -> Optional[Item]:
     # Determine item type from categories
     item.item_type = _determine_item_type(item.categories, item.weapon_type)
     
+    # Parse on_equip stats
+    on_equip_text = params.get("on_equip", "")
+    if on_equip_text:
+        item.on_equip = _parse_on_equip(on_equip_text)
+    
     return item
 
 
 def parse_enemy_wikitext(title: str, wikitext: str) -> Optional[Enemy]:
-    """Parse an enemy page if it follows a known template."""
+    """Parse an enemy page using the PQ Entity template."""
     if not wikitext:
         return None
     
     enemy = Enemy(name=title)
     
-    # Try to extract from PQ Enemy template
-    params = _extract_template_params(wikitext, "PQ Enemy")
-    if not params:
-        params = _extract_template_params(wikitext, "PQ_Enemy")
+    # The wiki uses {{PQ Entity}}, NOT {{PQ Enemy}}
+    params = _extract_template_params(wikitext, "PQ Entity")
+    
+    # Normalize template parameters: replace {{!}} with |
+    for key in params:
+        params[key] = params[key].replace("{{!}}", "|")
     
     if params:
-        info = params.get("information", "")
-        if "HP" in info:
-            m = re.search(r'\*\*HP\*\*\s*(?:\|=)?\s*([^\n|]+)', info)
-            if m:
-                enemy.hp = m.group(1).strip()
-        if "Damage" in info:
-            m = re.search(r'\*\*Damage\*\*\s*(?:\|=)?\s*([^\n|]+)', info)
-            if m:
-                enemy.damage = m.group(1).strip()
+        # Parse statistics HTML table
+        stats_html = params.get("statistics", "")
+        _parse_entity_statistics(stats_html, enemy)
         
-        enemy.description = _strip_wiki_markup(params.get("desc", ""))
-    
-    # Try to extract basic info from any page
-    # Look for HP, Damage patterns
-    if not enemy.hp:
-        m = re.search(r'\*\*HP[^*]*\*\*\s*[:=]\s*([0-9,]+)', wikitext)
-        if m:
-            enemy.hp = m.group(1)
-    
-    if not enemy.damage:
-        m = re.search(r'\*\*Damage[^*]*\*\*\s*[:=]\s*([0-9,\-]+)', wikitext)
-        if m:
-            enemy.damage = m.group(1)
+        # Parse found_in locations
+        found_in = params.get("found_in", "")
+        _parse_entity_locations(found_in, enemy)
+        
+        # Parse loot/drops
+        loot = params.get("loot", "")
+        _parse_entity_loot(loot, enemy)
+        
+        # Entity type from found_in or name
+        if "(Dungeon Boss)" in wikitext or "(Boss)" in wikitext:
+            enemy.entity_type = "boss"
+        else:
+            enemy.entity_type = "regular"
+    else:
+        # Fallback: try old template name
+        params = _extract_template_params(wikitext, "PQ Enemy")
+        if params:
+            info = params.get("information", "")
+            if "HP" in info:
+                m = re.search(r'\*\*HP\*\*\s*(?:\|=)?\s*([^\n|]+)', info)
+                if m:
+                    enemy.hp = m.group(1).strip()
+            if "Damage" in info:
+                m = re.search(r'\*\*Damage\*\*\s*(?:\|=)?\s*([^\n|]+)', info)
+                if m:
+                    enemy.damage = m.group(1).strip()
+            enemy.description = _strip_wiki_markup(params.get("desc", ""))
     
     # Extract categories
     cats = _extract_categories(wikitext)
-    enemy.category = next((c for c in cats if c in {"Bosses", "Enemies", "Friendlies", "NPCs"}), "")
+    if "Bosses" in cats:
+        enemy.entity_type = "boss"
+        enemy.category = "Bosses"
+    elif "Enemies" in cats:
+        enemy.category = "Enemies"
+    elif "Friendlies" in cats:
+        enemy.category = "Friendlies"
+    elif "NPCs" in cats:
+        enemy.entity_type = "npc"
+        enemy.category = "NPCs"
     
     return enemy
 
@@ -126,6 +150,10 @@ def parse_location_wikitext(title: str, wikitext: str) -> Optional[Location]:
     if not params:
         params = _extract_template_params(wikitext, "PQ_Location")
     
+    # Normalize template parameters: replace {{!}} with |
+    for key in params:
+        params[key] = params[key].replace("{{!}}", "|")
+    
     if params:
         # Parse difficulty from skull images
         diff_text = params.get("difficulty", "")
@@ -133,14 +161,11 @@ def parse_location_wikitext(title: str, wikitext: str) -> Optional[Location]:
         
         # Parse portal table
         portal = params.get("portal_table", "")
-        if "Teleportation" in portal:
-            loc.teleportation = "Yes" in portal.split("Teleportation")[1].split("|")[0]
-        if "Perma death" in portal:
-            loc.perma_death = "Yes" in portal.split("Perma death")[1].split("|")[0]
-        if "Max players" in portal:
-            m = re.search(r"Max players\D*(\d+)", portal)
-            if m:
-                loc.max_players = int(m.group(1))
+        _parse_portal_table(portal, loc)
+        
+        # Parse found entities
+        found_entities = params.get("found_entities", "")
+        _parse_found_entities(found_entities, loc)
     
     # Determine type
     cats = _extract_categories(wikitext)
@@ -296,8 +321,8 @@ def _strip_wiki_markup(text: str) -> str:
     # Remove wiki links but keep text: [[Page|text]] -> text, [[Page]] -> Page
     text = re.sub(r"\[\[([^|\]]+)\|([^\]]+)\]\]", r"\2", text)
     text = re.sub(r"\[\[([^\]]+)\]\]", r"\1", text)
-    # Remove HTML tags
-    text = re.sub(r"<[^>]+>", "", text)
+    # Remove HTML tags (replace with space to avoid concatenation)
+    text = re.sub(r"<[^>]+>", " ", text)
     # Remove file references
     text = re.sub(r"\[\[File:[^\]]+\]\]", "", text)
     # Clean up
@@ -376,9 +401,13 @@ def _parse_information_table(info_text: str, item: Item):
         
         elif "properties" in header_clean:
             props = {}
-            prop_matches = re.findall(r'([A-Z_]+)\s*:\s*([^\n|]+)', value_clean)
-            for k, v in prop_matches:
-                props[k] = v.strip()
+            # Split by <br> first, then parse key: value pairs
+            lines = re.split(r'<br\s*/?>|\n', value_clean)
+            for line in lines:
+                line = _strip_wiki_markup(line).strip()
+                prop_matches = re.findall(r'([A-Z_]+)\s*:\s*(.+)', line)
+                for k, v in prop_matches:
+                    props[k] = v.strip()
             item.properties = props
         
         elif "requirements" in header_clean:
@@ -387,6 +416,9 @@ def _parse_information_table(info_text: str, item: Item):
             for val, stat in req_matches:
                 reqs[stat] = int(val)
             item.requirements = reqs
+        
+        elif "on equip" in header_clean:
+            item.on_equip = _parse_on_equip(value_clean)
 
 
 def _parse_weapon_stats(weapon_text: str) -> Optional[WeaponStats]:
@@ -479,6 +511,161 @@ def _extract_dropped_by(text: str) -> list:
 def _extract_categories(text: str) -> list:
     """Extract category names from wikitext."""
     return re.findall(r'\[\[Category:\s*([^\]]+)\]\]', text)
+
+
+def _parse_entity_statistics(html: str, enemy: Enemy):
+    """Parse the statistics HTML table from PQ Entity template."""
+    if not html:
+        return
+    
+    # Strip wiki markup for cleaner parsing
+    clean = _strip_wiki_markup(html)
+    
+    # Extract Health: "Health 350,000 HP"
+    m = re.search(r'Health\s+([\d,]+\s*HP)', clean)
+    if m:
+        enemy.hp = m.group(1).strip()
+    
+    # Extract Defense: "Defense 60"
+    m = re.search(r'Defense\s+(\d[\d,]*)', clean)
+    if m:
+        enemy.defense = m.group(1).strip()
+    
+    # Extract Experience: "Experience 12,000"
+    m = re.search(r'Experience\s+([\d,]+)', clean)
+    if m:
+        enemy.experience = m.group(1).strip()
+    
+    # Extract Immunity list
+    m = re.search(r'Immunity.*?(?:</th>|<td>)\s*(.*?)(?=</tr>|$)', html, re.DOTALL)
+    if m:
+        immunity_html = m.group(1)
+        # Extract immunity names from wiki links [[Status effects#Paralyze|Paralyze]]
+        immunities = re.findall(r'Status effects#([^|]+)\|([^<\]]+)', immunity_html)
+        if immunities:
+            enemy.immunities = [name for _, name in immunities]
+        else:
+            # Fallback: strip tags and split by common separators
+            clean_imm = _strip_wiki_markup(immunity_html)
+            parts = re.split(r',\s*|\s*<br>\s*', clean_imm)
+            enemy.immunities = [p.strip() for p in parts if p.strip() and p.strip() != 'Immunity']
+
+
+def _parse_entity_locations(found_in: str, enemy: Enemy):
+    """Parse the found_in section to extract locations."""
+    if not found_in:
+        return
+    
+    # Extract wiki links: [[Location Name|display text]] or [[Location Name]]
+    links = re.findall(r'\[\[([^|\]]+)(?:\|[^\]]+)?\]\]', found_in)
+    for link in links:
+        if link.startswith("File:") or link.startswith("Category:") or link.startswith("Status effects"):
+            continue
+        enemy.location = link  # Take the first valid location
+        break
+
+
+def _parse_entity_loot(loot: str, enemy: Enemy):
+    """Parse the loot section to extract dropped items."""
+    if not loot:
+        return
+    
+    # Extract item wiki links from loot table
+    # Pattern: [[Item Name|Item Name]]
+    links = re.findall(r'\[\[([^|\]]+)(?:\|[^\]]+)?\]\]', loot)
+    drops = []
+    for link in links:
+        if link.startswith("File:") or link.startswith("Category:") or link.startswith(":Category:") or link.startswith("Status effects"):
+            continue
+        # Skip tier icon links (e.g., "Tier LG", "Tier CORRUPTED")
+        if link.startswith("Tier "):
+            continue
+        if link not in drops:
+            drops.append(link)
+    enemy.drops = drops
+
+
+def _parse_portal_table(portal: str, loc: Location):
+    """Parse the portal_table from PQ Location template."""
+    if not portal:
+        return
+    
+    clean = _strip_wiki_markup(portal)
+    
+    # Teleportation (account for | separator from wiki table syntax)
+    m = re.search(r'Teleportation\s*\|?\s*(Yes|No)', clean, re.IGNORECASE)
+    if m:
+        loc.teleportation = m.group(1).lower() == 'yes'
+    
+    # Perma death
+    m = re.search(r'Perma\s*death\s*\|?\s*(Yes|No)', clean, re.IGNORECASE)
+    if m:
+        loc.perma_death = m.group(1).lower() == 'yes'
+    
+    # Max players
+    m = re.search(r'Max\s*players\s*\|?\s*(\d+)', clean)
+    if m:
+        loc.max_players = int(m.group(1))
+    
+    # Max pity
+    m = re.search(r'Max\s*pity\s*\|?\s*([\d,]+)', clean)
+    if m:
+        loc.max_pity = int(m.group(1).replace(',', ''))
+    
+    # Chest health
+    m = re.search(r'Chest\s*health\s*\|?\s*([\d,]+)', clean)
+    if m:
+        loc.chest_health = m.group(1)
+    
+    # Legendaries — extract wiki links from the raw portal text (before markup stripping)
+    legendary_section = re.search(r'Legendaries\s*(.*?)$', portal, re.DOTALL)
+    if legendary_section:
+        links = re.findall(r'\[\[([^|\]]+)(?:\|[^\]]+)?\]\]', legendary_section.group(1))
+        loc.legendaries = [l for l in links if not l.startswith("File:") and not l.startswith("Category:") and not l.startswith("Tier")]
+
+
+def _parse_found_entities(found_text: str, loc: Location):
+    """Parse found entities from PQ Location template."""
+    if not found_text:
+        return
+    
+    # Extract entity wiki links and check for boss designation
+    # Pattern: [[Entity Name|Entity Name]] optionally followed by (Dungeon Boss)
+    entity_pattern = r'\[\[([^|\]]+)(?:\|([^\]]+))?\]\](?:\s*<small>\(([^)]+)\)</small>)?'
+    matches = re.findall(entity_pattern, found_text)
+    
+    for name, display, designation in matches:
+        if name.startswith("File:") or name.startswith("Category:"):
+            continue
+        entity_info = {"name": name, "is_boss": bool(designation and "Boss" in designation)}
+        loc.found_entities.append(entity_info)
+        if entity_info["is_boss"]:
+            if name not in loc.bosses:
+                loc.bosses.append(name)
+        else:
+            if name not in loc.enemies:
+                loc.enemies.append(name)
+
+
+def _parse_on_equip(text: str) -> dict:
+    """Parse on_equip stats from PQ Item template."""
+    stats = {}
+    # Normalize wiki template syntax
+    clean = text.replace("{{!}}", "|").replace("{{=}}", "=")
+    
+    # Extract stat rows: each row is "! <markup> StatName\n| <markup> +Value"
+    # Match pairs of header/value lines in the wiki table
+    stat_pattern = r'!\s+.*?(Attack|Defense|Health|Vitality)\s*\n\|\s*(.*?)(?=\n[!|]|\n\}|$)'
+    matches = re.findall(stat_pattern, clean, re.DOTALL | re.IGNORECASE)
+    
+    for stat_name, value_html in matches:
+        # Extract numeric value from the value cell (may contain HTML/wiki markup)
+        value_clean = _strip_wiki_markup(value_html)
+        m = re.search(r'\+?([\d,]+)', value_clean)
+        if m:
+            stats[stat_name.lower()] = int(m.group(1).replace(',', ''))
+    
+    return stats
 
 
 def _determine_item_type(categories: list, weapon_type: str) -> str:

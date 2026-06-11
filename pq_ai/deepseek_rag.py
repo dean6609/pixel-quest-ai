@@ -5,8 +5,54 @@ import json
 import logging
 import re
 from typing import Optional, List, Dict, Any
+from . import config
 
 logger = logging.getLogger(__name__)
+
+
+def strip_reasoning(content: str) -> str:
+    """Remove <think> reasoning blocks and other model artifacts from response."""
+    if not content:
+        return content
+    content = re.sub(r'<think>[\s\S]*?<\/think>', '', content)
+    content = re.sub(r'<thinking>[\s\S]*?</thinking>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'\n{3,}', '\n\n', content).strip()
+    return content
+
+
+def extract_reasoning(content: str) -> tuple:
+    """Extract reasoning blocks from content and convert to collapsible HTML.
+    Returns (reasoning_html, clean_content)."""
+    if not content:
+        return "", content
+
+    reasoning_blocks = []
+
+    # Extract <think> blocks
+    def _capture_think(m):
+        reasoning_blocks.append(m.group(1).strip())
+        return ""
+    content = re.sub(r'<think>([\s\S]*?)</think>', _capture_think, content)
+
+    # Extract <thinking> blocks
+    def _capture_thinking(m):
+        reasoning_blocks.append(m.group(1).strip())
+        return ""
+    content = re.sub(r'<thinking>([\s\S]*?)</thinking>', _capture_thinking, content, flags=re.IGNORECASE)
+
+    content = re.sub(r'\n{3,}', '\n\n', content).strip()
+
+    reasoning_html = ""
+    if reasoning_blocks:
+        combined = "\n\n".join(reasoning_blocks)
+        reasoning_html = (
+            '<details class="oracle-thinking">'
+            '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+            f'<div class="oracle-thinking-content">{combined}</div>'
+            '</details>\n\n'
+        )
+
+    return reasoning_html, content
 
 def get_openai_client():
     try:
@@ -31,14 +77,24 @@ def get_openai_client():
 SYSTEM_PROMPT = """Eres el Oráculo del Wiki, un experto asesor de Pixel Quest — un MMORPG bullet-hell con permadeath.
 
 Tu rol es recomendar objetos, builds y estrategias basándote en datos reales del wiki.
-¡NO INVENTES OBJETOS! Si no conoces un objeto o no tienes datos suficientes, TIENES que usar la herramienta `search_database` para buscarlo.
+¡NO INVENTES OBJETOS! Si no conoces un objeto o no tienes datos suficientes, TIENES que usar las herramientas de búsqueda para buscarlo.
 Si te preguntan por recomendaciones para empezar (ej. "arco inicial"), usa la herramienta para buscar por categoría (ej. "Bow") y filtra por Tiers bajos (ej. "T1" o "T2").
 
+## HERRAMIENTAS DISPONIBLES:
+- `search_database`: Busca objetos, armas, armaduras, accesorios. Puedes filtrar por tier, tipo de arma, etc.
+- `search_enemies`: Busca enemigos y jefes. Puedes filtrar por categoría, ubicación, tipo.
+- `search_locations`: Busca ubicaciones y dungeons. Puedes filtrar por tipo y dificultad.
+
 ## REGLAS ESTRICTAS:
-1. Solo recomiendas objetos que existen en los datos.
+1. Solo recomiendas objetos/enemigos/ubicaciones que existen en los datos.
 2. Si el usuario pregunta algo general, usa la herramienta de búsqueda para obtener contexto antes de responder.
 3. Considera el nivel, zona disponible y estilo de juego del jugador si te lo proporcionan.
-4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos". 
+4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos".
+
+## HIPERVÍNCULOS:
+Cuando menciones un objeto, enemigo o ubicación por nombre, SIEMPRE incluye un hipervínculo markdown a su página del wiki.
+Formato: [Nombre del Objeto](https://wiki.playpixelquest.com/wiki/Nombre_del_Objeto)
+Usa guiones bajos (_) en lugar de espacios en la URL. Codifica caracteres especiales.
 
 ## DATOS DEL JUEGO:
 - Tier: T0 (peor) → T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → LG → CORRUPTED (mejor)
@@ -51,7 +107,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "search_database",
-            "description": "Busca objetos en el wiki de Pixel Quest.",
+            "description": "Busca objetos/armas/armaduras en el wiki de Pixel Quest. Úsalo cuando el usuario pregunte por items, armas, armaduras, builds, o recomendaciones de equipamiento.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -61,7 +117,7 @@ TOOLS = [
                     },
                     "tier": {
                         "type": "string",
-                        "description": "Filtro de nivel exacto, ej. 'T1', 'T2', 'LG'."
+                        "description": "Filtro de nivel exacto, ej. 'T1', 'T2', 'LG', 'CORRUPTED'."
                     },
                     "item_type": {
                         "type": "string",
@@ -70,6 +126,58 @@ TOOLS = [
                     "weapon_type": {
                         "type": "string",
                         "description": "Tipo de arma específica, ej. 'Bow', 'Sword', 'Staff'."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_enemies",
+            "description": "Busca enemigos y jefes en el wiki de Pixel Quest. Úsalo cuando el usuario pregunte por enemigos, jefes, drops de enemigos, o dónde encontrar enemigos.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Nombre o texto libre del enemigo."
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Categoría del enemigo: 'Bosses', 'Enemies', 'Friendlies', 'NPCs'."
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "Ubicación donde se encuentra el enemigo."
+                    },
+                    "entity_type": {
+                        "type": "string",
+                        "description": "Tipo: 'boss', 'regular', 'npc'."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_locations",
+            "description": "Busca ubicaciones y dungeons en el wiki de Pixel Quest. Úsalo cuando el usuario pregunte por zonas, dungeons, o dónde farmear.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Nombre o texto libre de la ubicación."
+                    },
+                    "location_type": {
+                        "type": "string",
+                        "description": "Tipo: 'dungeon' o 'location'."
+                    },
+                    "max_difficulty": {
+                        "type": "integer",
+                        "description": "Dificultad máxima (1-10)."
                     }
                 }
             }
@@ -114,7 +222,9 @@ def format_search_results(items: List[dict]) -> str:
         return "No se encontraron objetos que coincidan con la búsqueda."
     
     parts = []
-    for item in items[:10]: # Max 10 items
+    for item in items[:10]:
+        wiki_url = config.get_wiki_url(item.get('name', ''))
+        
         weapon_info = ""
         if item.get("weapon_stats"):
             ws = item["weapon_stats"]
@@ -126,13 +236,80 @@ def format_search_results(items: List[dict]) -> str:
         dropped = item.get("dropped_by", [])
         drop_str = f" | Drop: {', '.join(dropped[:3])}" if dropped else ""
         
+        # On equip stats
+        on_equip = item.get("on_equip", {})
+        equip_str = ""
+        if on_equip:
+            equip_parts = [f"+{v} {k.capitalize()}" for k, v in on_equip.items()]
+            equip_str = f" | Equip: {', '.join(equip_parts)}"
+        
         itype = item.get('item_type', '?')
         wtype = item.get('weapon_type', '')
         type_str = f"{itype} - {wtype}" if wtype and wtype != itype else itype
         
         parts.append(
-            f"- {item.get('name', '?')} [{item.get('tier', '?')}] "
-            f"({type_str}){weapon_info}{passive_str}{drop_str}"
+            f"- [{item.get('name', '?')}]({wiki_url}) [{item.get('tier', '?')}] "
+            f"({type_str}){weapon_info}{passive_str}{drop_str}{equip_str}"
+        )
+    return "\n".join(parts)
+
+
+def format_enemy_results(enemies: List[dict]) -> str:
+    """Format enemy search results for the LLM."""
+    if not enemies:
+        return "No se encontraron enemigos que coincidan con la búsqueda."
+    
+    parts = []
+    for enemy in enemies[:10]:
+        wiki_url = config.get_wiki_url(enemy.get('name', ''))
+        
+        hp = enemy.get('hp', '')
+        defense = enemy.get('defense', '')
+        location = enemy.get('location', '')
+        entity_type = enemy.get('entity_type', '')
+        immunities = enemy.get('immunities', [])
+        drops = enemy.get('drops', [])
+        
+        type_str = f" ({entity_type})" if entity_type else ""
+        hp_str = f" | HP: {hp}" if hp else ""
+        def_str = f" | Def: {defense}" if defense else ""
+        loc_str = f" | Ubicación: {location}" if location else ""
+        imm_str = f" | Inmunidades: {', '.join(immunities)}" if immunities else ""
+        drop_str = f" | Drops: {', '.join(drops[:5])}" if drops else ""
+        
+        parts.append(
+            f"- [{enemy.get('name', '?')}]({wiki_url}){type_str}{hp_str}{def_str}{loc_str}{imm_str}{drop_str}"
+        )
+    return "\n".join(parts)
+
+
+def format_location_results(locations: List[dict]) -> str:
+    """Format location search results for the LLM."""
+    if not locations:
+        return "No se encontraron ubicaciones que coincidan con la búsqueda."
+    
+    parts = []
+    for loc in locations[:10]:
+        wiki_url = config.get_wiki_url(loc.get('name', ''))
+        
+        loc_type = loc.get('location_type', '')
+        difficulty = loc.get('difficulty', 0)
+        perma = loc.get('perma_death', False)
+        max_players = loc.get('max_players', 0)
+        enemies = loc.get('enemies', [])
+        bosses = loc.get('bosses', [])
+        legendaries = loc.get('legendaries', [])
+        
+        type_str = f" ({loc_type})" if loc_type else ""
+        diff_str = f" | Dificultad: {difficulty}/10" if difficulty else ""
+        perma_str = " | ⚠️ Perma death" if perma else ""
+        players_str = f" | Max jugadores: {max_players}" if max_players else ""
+        boss_str = f" | Jefes: {', '.join(bosses[:3])}" if bosses else ""
+        enemy_str = f" | Enemigos: {len(enemies)}" if enemies else ""
+        leg_str = f" | Legendarios: {', '.join(legendaries[:3])}" if legendaries else ""
+        
+        parts.append(
+            f"- [{loc.get('name', '?')}]({wiki_url}){type_str}{diff_str}{perma_str}{players_str}{boss_str}{enemy_str}{leg_str}"
         )
     return "\n".join(parts)
 
@@ -155,7 +332,7 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     messages.append({"role": "user", "content": user_prompt})
     
     model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
-    MAX_TOOL_ROUNDS = 4
+    MAX_TOOL_ROUNDS = 8
     
     try:
         for round_num in range(MAX_TOOL_ROUNDS + 1):
@@ -165,13 +342,17 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                 tools=TOOLS,
                 tool_choice="auto",
                 temperature=0.3,
-                max_tokens=1500
+                max_tokens=3000
             )
             
             response_message = response.choices[0].message
             tool_calls = response_message.tool_calls
             
+            # Capture reasoning_content if DeepSeek returns it separately
+            api_reasoning = getattr(response_message, 'reasoning_content', None) or ""
+            
             logger.info(f"Round {round_num + 1} - Content length: {len(response_message.content) if response_message.content else 0}")
+            logger.info(f"Round {round_num + 1} - Reasoning length: {len(api_reasoning)}")
             logger.info(f"Round {round_num + 1} - Structured tool_calls: {tool_calls}")
             
             use_text_tool_calls = False
@@ -192,14 +373,39 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
             # If no tool calls, this is the final response
             if not tool_calls:
                 logger.info(f"Final response after {round_num + 1} round(s), length: {len(response_message.content) if response_message.content else 0}")
-                return response_message.content or ""
+                reasoning_html, clean_content = extract_reasoning(response_message.content or "")
+                # Prepend API-level reasoning if available
+                if api_reasoning:
+                    reasoning_html = (
+                        '<details class="oracle-thinking">'
+                        '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+                        f'<div class="oracle-thinking-content">{api_reasoning}</div>'
+                        '</details>\n\n'
+                    ) + reasoning_html
+
+                # If all content was inside thinking tags, force a final answer
+                if not clean_content.strip() and reasoning_html:
+                    logger.info("All content was reasoning — requesting final answer...")
+                    messages.append({"role": "assistant", "content": response_message.content or ""})
+                    messages.append({"role": "user", "content": "Por favor, da tu respuesta final al jugador basándote en tu análisis. No pienses más, solo responde."})
+                    forced = client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=0.3,
+                        max_tokens=3000
+                    )
+                    clean_content = forced.choices[0].message.content or ""
+                    extra_reasoning, clean_content = extract_reasoning(clean_content)
+                    reasoning_html += extra_reasoning
+
+                return reasoning_html + clean_content
             
             logger.info(f"Round {round_num + 1} - Processing {len(tool_calls)} tool calls...")
             
             if use_text_tool_calls:
                 messages.append({
                     "role": "assistant",
-                    "content": response_message.content,
+                    "content": strip_reasoning(response_message.content),
                     "tool_calls": [
                         {
                             "id": tc["id"],
@@ -245,6 +451,49 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                         "name": "search_database",
                         "content": tool_content
                     })
+                
+                elif func_name == "search_enemies":
+                    args = json.loads(args_str)
+                    logger.info(f"Searching enemies: query={args.get('query')}, category={args.get('category')}")
+                    
+                    enemy_results = search_engine.search_enemies(
+                        query=args.get("query", ""),
+                        category=args.get("category"),
+                        location=args.get("location"),
+                        entity_type=args.get("entity_type"),
+                        top_k=10
+                    )
+                    
+                    tool_content = format_enemy_results(enemy_results)
+                    logger.info(f"Found {len(enemy_results)} enemies")
+                    
+                    messages.append({
+                        "tool_call_id": tool_call_id,
+                        "role": "tool",
+                        "name": "search_enemies",
+                        "content": tool_content
+                    })
+                
+                elif func_name == "search_locations":
+                    args = json.loads(args_str)
+                    logger.info(f"Searching locations: query={args.get('query')}, type={args.get('location_type')}")
+                    
+                    location_results = search_engine.search_locations(
+                        query=args.get("query", ""),
+                        location_type=args.get("location_type"),
+                        max_difficulty=args.get("max_difficulty"),
+                        top_k=10
+                    )
+                    
+                    tool_content = format_location_results(location_results)
+                    logger.info(f"Found {len(location_results)} locations")
+                    
+                    messages.append({
+                        "tool_call_id": tool_call_id,
+                        "role": "tool",
+                        "name": "search_locations",
+                        "content": tool_content
+                    })
         
         # Exhausted all tool rounds - force a text response without tools
         logger.warning(f"Exhausted {MAX_TOOL_ROUNDS} tool rounds, forcing text response...")
@@ -252,11 +501,12 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
             model=model,
             messages=messages,
             temperature=0.3,
-            max_tokens=1500
+            max_tokens=3000
         )
         final_content = final_response.choices[0].message.content
         logger.info(f"Forced final response length: {len(final_content) if final_content else 0}")
-        return final_content or ""
+        reasoning_html, clean_content = extract_reasoning(final_content or "")
+        return reasoning_html + clean_content
             
     except Exception as e:
         logger.error(f"DeepSeek API error: {e}")

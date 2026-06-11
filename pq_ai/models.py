@@ -37,6 +37,7 @@ class Item:
     dropped_by: list = field(default_factory=list)  # enemy names
     armor_stats: dict = field(default_factory=dict)  # for armor pieces
     requirements: dict = field(default_factory=dict)
+    on_equip: dict = field(default_factory=dict)  # {"attack": 12, "defense": 12, "health": 50, "vitality": 15}
     
     def to_dict(self):
         result = asdict(self)
@@ -64,6 +65,10 @@ class Enemy:
     speed: str = ""
     abilities: list = field(default_factory=list)
     description: str = ""
+    defense: str = ""
+    experience: str = ""
+    immunities: list = field(default_factory=list)
+    entity_type: str = ""  # "boss", "regular", "npc"
     
     def to_dict(self):
         return asdict(self)
@@ -87,6 +92,10 @@ class Location:
     bosses: list = field(default_factory=list)
     enemies: list = field(default_factory=list)  # enemy names in this location
     description: str = ""
+    max_pity: int = 0
+    chest_health: str = ""
+    legendaries: list = field(default_factory=list)
+    found_entities: list = field(default_factory=list)  # entities found in this location
     
     def to_dict(self):
         return asdict(self)

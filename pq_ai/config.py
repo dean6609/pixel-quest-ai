@@ -17,6 +17,13 @@ LOCATIONS_FILE = os.path.join(DATA_DIR, "locations.json")
 RELATIONSHIPS_FILE = os.path.join(DATA_DIR, "relationships.json")
 LAST_SYNC_FILE = os.path.join(DATA_DIR, "last_sync.json")
 
+def get_wiki_url(entity_name: str) -> str:
+    """Generate wiki URL for an entity name."""
+    import urllib.parse
+    encoded = urllib.parse.quote(entity_name.replace(" ", "_"), safe="")
+    return f"{WIKI_BASE}/wiki/{encoded}"
+
+
 # Rate limiting
 REQUEST_DELAY = 0.3  # seconds between API requests
 

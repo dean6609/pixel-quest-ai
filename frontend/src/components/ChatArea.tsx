@@ -4,20 +4,33 @@ import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
 import { useChat } from "../context/ChatContext";
 
+// Configure marked to open external links in new tabs
+marked.use({
+  useNewRenderer: true,
+  renderer: {
+    link({ href, title, text }: any) {
+      const titleAttr = title ? ` title="${title}"` : "";
+      if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+        return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+      }
+      return `<a href="${href}"${titleAttr}>${text}</a>`;
+    },
+  },
+});
+
 // Safely parse markdown synchronously (marked v13 parse() may return Promise)
 function parseMarkdown(content: string): string {
   const result = marked.parse(content);
   return typeof result === "string" ? result : "";
 }
 
-// Sanitize content to remove tool call tags and other problematic content
+// Sanitize content to remove tool call tags and other artifacts
 function sanitizeContent(content: string): string {
-  // Remove tool call tags like <｜｜DSML｜｜tool_calls>...</｜｜DSML｜｜tool_calls>
-  // and <｜｜DSML｜｜invoke>...</｜｜DSML｜｜invoke> etc.
   return content
     .replace(/<｜｜DSML｜｜tool_calls>[\s\S]*?<\/｜｜DSML｜｜tool_calls>/g, '')
     .replace(/<｜｜DSML｜｜invoke[^>]*>[\s\S]*?<\/｜｜DSML｜｜invoke>/g, '')
     .replace(/<｜｜DSML｜｜parameter[^>]*>[\s\S]*?<\/｜｜DSML｜｜parameter>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
