@@ -47,4 +47,11 @@ Thumbs.db
 # ─── Logs ─────────────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# ─── Large / Generated Files ─────────────────────────────────────────────────
 backup-branch-feat-midu.tar.gz
+sondaven-complete.html
+
+# ─── MCP / Internal Tools ────────────────────────────────────────────────────
+.playwright-mcp/
+.kunsdd/
