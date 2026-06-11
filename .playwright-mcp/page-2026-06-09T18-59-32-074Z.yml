@@ -1,0 +1,859 @@
+- generic [ref=e265]:
+  - navigation [ref=e266]:
+    - generic [ref=e268]:
+      - generic [ref=e271] [cursor=pointer]:
+        - img [ref=e273]
+        - img [ref=e276]
+        - img [ref=e279]
+      - link "Son Daven logo" [ref=e282] [cursor=pointer]:
+        - /url: "#hero"
+        - img [ref=e284]
+      - list [ref=e304]:
+        - listitem [ref=e305]:
+          - link "UA" [ref=e306] [cursor=pointer]:
+            - /url: /ua
+            - generic [ref=e307]:
+              - generic [ref=e309]: UA
+              - generic [ref=e311]: UA
+  - generic [ref=e327]:
+    - generic [ref=e329]:
+      - heading "investment project" [level=1] [ref=e332]
+      - img [ref=e338]
+      - generic [ref=e357]:
+        - generic [ref=e358]:
+          - paragraph [ref=e359]: Development
+          - generic [ref=e360]:
+            - img [ref=e364]
+            - paragraph [ref=e366]: by blago
+        - paragraph [ref=e368]:
+          - text: Yaremche
+          - text: Ivano-Frankivsk
+    - link "Invest in a hotel" [ref=e372] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=e376]: Invest in a hotel
+  - generic [ref=e382]:
+    - generic [ref=e384]:
+      - generic [ref=e385]:
+        - img [ref=e388]
+        - img [ref=e392]
+        - img [ref=e396]
+      - heading "prologue" [level=2] [ref=e398]
+      - generic [ref=e399]:
+        - img [ref=e402]
+        - img [ref=e406]
+        - img [ref=e410]
+    - heading "“Among these mountains, where the wind becomes a voice and forests guard the wisdom of thousands of years, the Carpathian heritage comes alive—a primal force that reconnects people with their roots and empowers them to bring an ancient dream to life”" [level=3] [ref=e414]
+    - link "Consultation" [ref=e418] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=e421]: Consultation
+  - generic [ref=e428]:
+    - generic [ref=e431]:
+      - heading "Son Daven" [level=2] [ref=e433]
+      - generic [ref=e434]:
+        - img [ref=e437]
+        - paragraph [ref=e439]: by blago
+    - generic [ref=e441]:
+      - generic [ref=e442]:
+        - heading "About Us" [level=3] [ref=e443]
+        - paragraph [ref=e450]:
+          - generic [ref=e451]: Son Daven is a new place of power in
+          - generic [ref=e452]: the Carpathians, where Hutsul culture
+          - generic [ref=e453]: is reinterpreted through architecture,
+          - generic [ref=e454]: spatial design, hospitality, and
+          - generic [ref=e455]: contemporary art. Here, traditions take
+          - generic [ref=e456]: on a new form, and the ancient spirit of
+          - generic [ref=e457]: the Carpathians merges with modern
+          - generic [ref=e458]: comfort.
+        - link "Consultation" [ref=e463] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e466]: Consultation
+      - generic [ref=e469]:
+        - heading "Concept" [level=3] [ref=e471]
+        - paragraph [ref=e478]:
+          - generic [ref=e479]: The architecture of the complex grows
+          - generic [ref=e480]: from the mountains, preserving their
+          - generic [ref=e481]: strength in stone and warmth in wood.
+          - generic [ref=e482]: Panoramic terraces open up views from
+          - generic [ref=e483]: which the spirit intercepts, and
+          - generic [ref=e484]: traditions intertwine with modernity,
+          - generic [ref=e485]: "creating a new format of recreation:"
+          - generic [ref=e486]: deep, meaningful, filled with the energy
+          - generic [ref=e487]: of nature and culture of Hutsul region.
+        - link "See you in a dream See you in a dream" [ref=e489] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e496]
+          - generic [ref=e501]:
+            - generic [ref=e503]: See you in a dream
+            - generic [ref=e505]: See you in a dream
+    - generic:
+      - generic:
+        - img "Modern multi-storey building with large windows, balconies and green spaces on the roofs and railings."
+  - generic [ref=e509]:
+    - heading "wherethemountains Speak" [level=2] [ref=e513]
+    - generic [ref=e522]:
+      - generic [ref=e524]:
+        - img "Map of yaremche" [ref=e525]
+        - img [ref=e529]
+        - generic [ref=e536]:
+          - heading "Waterfall Breakdown" [level=2] [ref=e538]
+          - img [ref=e540]
+        - generic [ref=e544]:
+          - heading "Park of legends “Gedzo”" [level=2] [ref=e546]
+          - img [ref=e548]
+        - generic [ref=e552]:
+          - heading "Architectural monument, restaurant “Hutsulshchyna”" [level=2] [ref=e554]
+          - img [ref=e556]
+        - generic [ref=e560]:
+          - heading "Hutsul Souvenir Market" [level=2] [ref=e562]
+          - img [ref=e564]
+        - generic [ref=e568]:
+          - generic [ref=e569]:
+            - heading "Dovbucha Rocks" [level=2] [ref=e570]
+            - generic [ref=e571]: 1200 m
+          - img [ref=e573]
+          - img [ref=e577]
+        - generic [ref=e580]:
+          - generic [ref=e581]:
+            - heading "Park “Carpathians in miniature”" [level=2] [ref=e582]
+            - generic [ref=e583]: 3 km
+          - img [ref=e585]
+          - img [ref=e589]
+      - generic [ref=e591]:
+        - paragraph [ref=e592]:
+          - generic [ref=e593]: Son Daven is located at the
+          - generic [ref=e594]: foothills of the Carpathian
+          - generic [ref=e595]: Mountains, in the very heart of
+          - generic [ref=e596]: Yaremche—the capital of Hutsul
+          - generic [ref=e597]: heritage and enchanting nature.
+        - link "Consultation" [ref=e602] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e605]: Consultation
+    - generic [ref=e608]:
+      - list [ref=e611]:
+        - listitem [ref=e612]:
+          - generic [ref=e613]:
+            - heading "31min." [level=1] [ref=e614]
+            - paragraph [ref=e615]:
+              - generic [ref=e616]: On foot to
+              - generic [ref=e617]: Carpathians in Miniature park
+        - listitem [ref=e618]:
+          - generic [ref=e619]:
+            - heading "6min." [level=1] [ref=e620]
+            - paragraph [ref=e621]:
+              - generic [ref=e622]: On foot to
+              - generic [ref=e623]: Probiy waterfall
+        - listitem [ref=e624]:
+          - generic [ref=e625]:
+            - heading "5min." [level=1] [ref=e626]
+            - paragraph [ref=e627]:
+              - generic [ref=e628]: On foot to
+              - generic [ref=e629]: Gedzio Legend Park
+        - listitem [ref=e630]:
+          - generic [ref=e631]:
+            - heading "7min." [level=1] [ref=e632]
+            - paragraph [ref=e633]:
+              - generic [ref=e634]: On foot to
+              - generic [ref=e635]: Hutsulshchyna (restaurant and architectural monument)
+        - listitem [ref=e636]:
+          - generic [ref=e637]:
+            - heading "15min." [level=1] [ref=e638]
+            - paragraph [ref=e639]:
+              - generic [ref=e640]: On foot to
+              - generic [ref=e641]: Dovbucha Rocks
+        - listitem [ref=e642]:
+          - generic [ref=e643]:
+            - heading "5min." [level=1] [ref=e644]
+            - paragraph [ref=e645]:
+              - generic [ref=e646]: On foot to
+              - generic [ref=e647]: Hutsul souvenir market
+      - generic [ref=e649]:
+        - generic [ref=e650]: Location
+        - link "Str. I.Petrasha, 6/3, Yaremche, Ivano-Frankivsk region, 78503" [ref=e652] [cursor=pointer]:
+          - /url: https://maps.app.goo.gl/59WcipUhsCXbKPmo7
+          - paragraph [ref=e655]: Str. I.Petrasha, 6/3, Yaremche, Ivano-Frankivsk region, 78503
+  - generic [ref=e660]:
+    - generic [ref=e662]:
+      - generic [ref=e665]: hold and move
+      - generic:
+        - link "Summer":
+          - /url: "#"
+          - generic:
+            - img
+          - generic:
+            - generic:
+              - img
+      - generic:
+        - link "winter":
+          - /url: "#"
+          - generic:
+            - img
+          - generic:
+            - generic:
+              - img
+      - img [ref=e667]
+    - generic [ref=e677]:
+      - 'heading "Summer turns this area into an exciting adventure map: hiking trails, mountain river rafting, cultural festivals, and culinary journeys." [level=2] [ref=e678]'
+      - link "Consultation" [ref=e683] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e686]: Consultation
+  - generic [ref=e696]:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+            - heading "Uniqueness" [level=2]
+            - generic:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+          - heading "Why Son Daven captivate" [level=3]
+    - generic [ref=e701]:
+      - list [ref=e703]:
+        - listitem [ref=e704]:
+          - generic [ref=e705] [cursor=pointer]:
+            - generic [ref=e706]:
+              - heading "Wellness & SPA" [level=4] [ref=e708]
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Learn more":
+                      - /url: "#"
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                          - generic:
+                            - img
+            - img "conceived as a place to restore body and spirit. The spacious wellness complex offers guests:" [ref=e712]
+        - listitem [ref=e713]:
+          - generic [ref=e714] [cursor=pointer]:
+            - generic [ref=e715]:
+              - heading "Cuisine" [level=4] [ref=e717]
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Learn more":
+                      - /url: "#"
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                          - generic:
+                            - img
+            - img "Is yet another language through which we tell our legend." [ref=e721]
+        - listitem [ref=e722]:
+          - generic [ref=e723] [cursor=pointer]:
+            - generic [ref=e724]:
+              - heading "When even the sheep guide you to yoga..." [level=4] [ref=e726]
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Learn more":
+                      - /url: "#"
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                          - generic:
+                            - img
+            - img "Our design hotel offers everything you need to stay active." [ref=e730]
+        - listitem [ref=e731]:
+          - generic [ref=e732] [cursor=pointer]:
+            - generic [ref=e733]:
+              - heading "A space where ideas are born" [level=4] [ref=e735]
+              - generic:
+                - generic:
+                  - generic:
+                    - link "Learn more":
+                      - /url: "#"
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                          - generic:
+                            - img
+            - img "A space where ideas are born" [ref=e739]
+      - link "Show more Show more" [ref=e744] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e745]:
+          - generic [ref=e747]: Show more
+          - generic [ref=e749]: Show more
+  - generic [ref=e756]:
+    - generic [ref=e759]:
+      - generic [ref=e761]:
+        - generic [ref=e762]:
+          - img [ref=e765]
+          - img [ref=e769]
+          - img [ref=e773]
+        - heading "Apartments" [level=2] [ref=e775]
+        - generic [ref=e776]:
+          - img [ref=e779]
+          - img [ref=e783]
+          - img [ref=e787]
+      - heading "One- to three-bedroom units designed for solo travelers, couples, or families. Panoramic windows, spacious terraces, and natural textures and materials elevate the experience of a Carpathian getaway." [level=3] [ref=e790]
+      - paragraph [ref=e794]:
+        - generic [ref=e795]: The design features Hutsul
+        - generic [ref=e796]: touches that bring genuine
+        - generic [ref=e797]: authenticity to the space.
+    - generic [ref=e798]:
+      - generic [ref=e800]:
+        - heading "types" [level=4] [ref=e803]
+        - list [ref=e811]:
+          - listitem [ref=e812]:
+            - link "Studio" [ref=e813] [cursor=pointer]:
+              - /url: "#"
+              - heading "Studio" [level=5] [ref=e814]
+              - img [ref=e818]
+          - listitem [ref=e820]:
+            - link "Deluxe" [ref=e821] [cursor=pointer]:
+              - /url: "#"
+              - heading "Deluxe" [level=5] [ref=e822]
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+          - listitem [ref=e823]:
+            - link "Superior" [ref=e824] [cursor=pointer]:
+              - /url: "#"
+              - heading "Superior" [level=5] [ref=e825]
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+          - listitem [ref=e826]:
+            - link "Suite" [ref=e827] [cursor=pointer]:
+              - /url: "#"
+              - heading "Suite" [level=5] [ref=e828]
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+          - listitem [ref=e829]:
+            - link "Family" [ref=e830] [cursor=pointer]:
+              - /url: "#"
+              - heading "Family" [level=5] [ref=e831]
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+          - listitem [ref=e832]:
+            - link "Penthouse" [ref=e833] [cursor=pointer]:
+              - /url: "#"
+              - heading "Penthouse" [level=5] [ref=e834]
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+      - list [ref=e843]:
+        - listitem [ref=e844]:
+          - generic [ref=e845]:
+            - generic [ref=e846]:
+              - generic [ref=e847]:
+                - heading "From37 m2" [level=6] [ref=e850]:
+                  - text: From37
+                  - generic [ref=e851]:
+                    - text: m
+                    - superscript [ref=e852]: "2"
+                - list [ref=e856]:
+                  - paragraph [ref=e859]: 2+1 guests
+                  - listitem [ref=e860]:
+                    - paragraph [ref=e862]: Panoramic living area
+                  - listitem [ref=e863]:
+                    - paragraph [ref=e865]: Open-plan kitchen
+                  - listitem [ref=e866]:
+                    - paragraph [ref=e868]: Views of the forest, mountains, and Probiy waterfall
+                  - listitem [ref=e869]:
+                    - paragraph [ref=e871]: Summer terrace
+                  - listitem [ref=e872]:
+                    - paragraph [ref=e874]: Equipped cooking space
+                  - listitem [ref=e875]:
+                    - paragraph [ref=e877]: Designer interior
+                  - listitem [ref=e878]:
+                    - paragraph [ref=e880]: вартість від 168 850 грн/м²
+                - paragraph [ref=e884]: A stylish studio apartment with a spacious panoramic living area and integrated kitchen zone.
+              - generic [ref=e885]:
+                - generic [ref=e886]:
+                  - generic [ref=e887]:
+                    - generic [ref=e889]: "1"
+                    - generic [ref=e892]: "10"
+                  - generic [ref=e893]:
+                    - generic [ref=e895]:
+                      - link "Previous" [ref=e896] [cursor=pointer]:
+                        - /url: "#"
+                      - img [ref=e900]
+                    - generic [ref=e904]:
+                      - link "Next" [ref=e905] [cursor=pointer]:
+                        - /url: "#"
+                      - img [ref=e909]
+                - list [ref=e913]:
+                  - listitem [ref=e914]
+                  - listitem [ref=e916]
+                  - listitem [ref=e918]
+                  - listitem [ref=e920]
+                  - listitem [ref=e922]
+                  - listitem [ref=e924]
+                  - listitem [ref=e926]
+                  - listitem [ref=e928]
+                  - listitem [ref=e930]
+                  - listitem [ref=e932]
+            - generic [ref=e936]:
+              - link "Дізнатись ціну" [ref=e938] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e941]: Дізнатись ціну
+              - generic [ref=e946] [cursor=pointer]:
+                - generic [ref=e947]:
+                  - link "Next" [ref=e948]:
+                    - /url: "#"
+                  - img [ref=e952]
+                - generic [ref=e955]:
+                  - text: дивитися
+                  - text: відео
+  - generic [ref=e960]:
+    - img "A modern multi-storey building with large arches on the ground floor and trees on the balconies, set among green trees and lawn." [ref=e965]
+    - generic [ref=e968]:
+      - generic "‘26 ‘28" [ref=e969]:
+        - img [ref=e972]
+      - generic [ref=e979]:
+        - generic [ref=e982]:
+          - paragraph [ref=e984]: Construction begins
+          - paragraph [ref=e986]: in Q4 2025
+        - generic [ref=e991]:
+          - paragraph [ref=e993]: Section 1 ready
+          - paragraph [ref=e995]: in Q4 2027
+        - generic [ref=e1000]:
+          - paragraph [ref=e1002]: Section 2 ready
+          - paragraph [ref=e1004]: in Q4 2028
+  - generic [ref=e1009]:
+    - generic [ref=e1016]:
+      - generic [ref=e1017]:
+        - heading "Financial indicators" [level=2] [ref=e1018]
+        - img [ref=e1021]
+        - generic [ref=e1023]: Financial indicators
+        - img [ref=e1026]
+        - generic [ref=e1028]: Financial indicators
+        - img [ref=e1031]
+      - generic [ref=e1033]:
+        - generic [ref=e1034]: Financial indicators
+        - img [ref=e1037]
+        - generic [ref=e1039]: Financial indicators
+        - img [ref=e1042]
+        - generic [ref=e1044]: Financial indicators
+        - img [ref=e1047]
+    - generic [ref=e1054]:
+      - generic [ref=e1055]:
+        - heading "Dividend payments begin" [level=3] [ref=e1056]:
+          - generic [ref=e1057]: Dividend payments begin
+        - heading "in Q4 2028" [level=4] [ref=e1059]
+      - generic [ref=e1064]:
+        - generic [ref=e1065]:
+          - heading "Guaranteed annual return:" [level=3] [ref=e1067]
+          - paragraph [ref=e1070]: 10%
+        - generic [ref=e1071]:
+          - generic [ref=e1072]:
+            - heading "Capitalization:" [level=3] [ref=e1073]
+            - generic [ref=e1075] [cursor=pointer]:
+              - heading "(?)" [level=1] [ref=e1077]
+              - generic:
+                - paragraph: Increase in the value of an asset following its commissioning
+                - generic:
+                  - img
+          - paragraph [ref=e1080]: 30%
+        - generic [ref=e1081]:
+          - heading "Installment plan" [level=3] [ref=e1083]
+          - paragraph [ref=e1086]: Up to 2 years
+        - generic [ref=e1087]:
+          - heading "Down payment" [level=3] [ref=e1089]
+          - paragraph [ref=e1092]: From 30%
+    - generic [ref=e1097]:
+      - generic [ref=e1099]:
+        - heading "Our forecast" [level=2] [ref=e1100]:
+          - generic [ref=e1101]: Our forecast
+        - generic [ref=e1104]:
+          - generic [ref=e1107]:
+            - paragraph [ref=e1109]: "Estimated payback period:"
+            - paragraph [ref=e1111]: ≈7 years
+          - generic [ref=e1116]:
+            - paragraph [ref=e1118]: "Average annual occupancy:"
+            - paragraph [ref=e1120]: ≈65%
+      - generic [ref=e1123]:
+        - generic [ref=e1124]:
+          - heading "Additional benefits" [level=2] [ref=e1125]:
+            - generic [ref=e1126]: Additional benefits
+          - generic [ref=e1129]:
+            - generic [ref=e1132]:
+              - paragraph [ref=e1134]: 30 days of complimentary accommodation per year
+              - generic:
+                - paragraph
+            - generic [ref=e1139]:
+              - paragraph [ref=e1141]: The complex operates year-round, thus ensuring stable occupancy and returns
+              - generic:
+                - paragraph
+            - generic [ref=e1146]:
+              - paragraph [ref=e1148]: Our in-house management company, SD Management, handles your apartment professionally without any hassle
+              - generic:
+                - paragraph
+        - link "Consultation" [ref=e1154] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1157]: Consultation
+  - generic [ref=e1164]:
+    - generic [ref=e1166]:
+      - generic [ref=e1167]:
+        - generic [ref=e1168]:
+          - img [ref=e1171]
+          - img [ref=e1175]
+          - img [ref=e1179]
+        - heading "developer" [level=2] [ref=e1181]
+        - generic [ref=e1182]:
+          - img [ref=e1185]
+          - img [ref=e1189]
+          - img [ref=e1193]
+      - heading "A legend brought to life in the very heart of the Carpathians, uniting Past and Future" [level=3] [ref=e1196]
+    - generic [ref=e1198]:
+      - generic:
+        - generic:
+          - generic:
+            - paragraph: urban tech developer creates a future-ready environment where real estate means more than just square meters. It’s a combination of services, infrastructure, and people-focused care, which shapes a new standard of living.
+            - generic:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+          - generic:
+            - generic:
+              - generic:
+                - img
+          - generic:
+            - generic:
+              - paragraph: urban tech
+              - paragraph: developer
+  - generic [ref=e1204]:
+    - generic [ref=e1206]:
+      - paragraph [ref=e1210]:
+        - generic [ref=e1211]: years of experience in the
+        - generic [ref=e1212]: real estate market
+      - paragraph [ref=e1214]
+    - generic [ref=e1216]:
+      - paragraph [ref=e1220]:
+        - generic [ref=e1221]: Ranked 2nd among developers in
+        - generic [ref=e1222]: Ukraine by Forbes Ukraine
+      - paragraph [ref=e1224]
+    - generic [ref=e1226]:
+      - paragraph [ref=e1230]:
+        - generic [ref=e1231]: completed projects
+      - paragraph [ref=e1233]
+    - generic [ref=e1235]:
+      - paragraph [ref=e1239]:
+        - generic [ref=e1240]: International Property Awards in
+        - generic [ref=e1241]: London
+      - paragraph [ref=e1243]
+  - generic [ref=e1251]:
+    - generic "projectgallery" [ref=e1253]:
+      - heading [level=2] [ref=e1254]
+    - generic [ref=e1257]:
+      - generic [ref=e1258]:
+        - generic [ref=e1259]:
+          - generic [ref=e1261]: "1"
+          - generic [ref=e1264]: "14"
+        - generic [ref=e1265]:
+          - generic [ref=e1267]:
+            - link "Previous" [ref=e1268] [cursor=pointer]:
+              - /url: "#"
+            - img [ref=e1272]
+          - generic [ref=e1276]:
+            - link "Next" [ref=e1277] [cursor=pointer]:
+              - /url: "#"
+            - img [ref=e1281]
+      - list [ref=e1286]:
+        - listitem [ref=e1287]
+        - listitem [ref=e1289]
+        - listitem [ref=e1291]
+        - listitem [ref=e1293]
+        - listitem [ref=e1295]
+        - listitem [ref=e1297]
+        - listitem [ref=e1299]
+        - listitem [ref=e1301]
+        - listitem [ref=e1303]
+        - listitem [ref=e1305]
+        - listitem [ref=e1307]
+        - listitem [ref=e1309]
+        - listitem [ref=e1311]
+        - listitem [ref=e1313]
+    - generic [ref=e1317]:
+      - link "Invest in Son Daven" [ref=e1320] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e1324]: Invest in Son Daven
+      - generic [ref=e1326]:
+        - img [ref=e1328]
+        - paragraph [ref=e1406]: Son Daven is designed to restore energy, deliver profit, inspire, and prove that true relaxation is not a place—it’s a state of mind. See you in Son Daven.
+  - generic [ref=e1414]:
+    - generic [ref=e1416]:
+      - generic [ref=e1417]:
+        - generic [ref=e1418]:
+          - img [ref=e1421]
+          - img [ref=e1425]
+          - img [ref=e1429]
+        - heading "Blog" [level=2] [ref=e1431]
+        - generic [ref=e1432]:
+          - img [ref=e1435]
+          - img [ref=e1439]
+          - img [ref=e1443]
+      - heading "Latest News and Updates" [level=3] [ref=e1446]
+      - generic [ref=e1450]:
+        - link "News" [ref=e1453] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1456]: News
+        - link "Construction progress" [ref=e1458] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1461]: Construction progress
+    - generic [ref=e1464]:
+      - list [ref=e1466]:
+        - listitem [ref=e1467]:
+          - generic [ref=e1468]:
+            - link "Туристичний та інвестиційний потенціал Яремче" [ref=e1469] [cursor=pointer]:
+              - /url: /en/news/turistichniy-ta-investiciyniy-potencial-yaremche
+            - generic [ref=e1473]:
+              - heading "Туристичний та інвестиційний потенціал Яремче" [level=4] [ref=e1477]
+              - paragraph [ref=e1483]: Чому саме тут формується новий центр прибуткової нерухомості?
+        - listitem [ref=e1484]:
+          - generic [ref=e1485]:
+            - link "«The economics are better than in residential real estate»" [ref=e1486] [cursor=pointer]:
+              - /url: /en/news/forbes-pro-son-daven
+            - generic [ref=e1490]:
+              - heading "«The economics are better than in residential real estate»" [level=4] [ref=e1494]
+              - paragraph [ref=e1500]: Ivano-Frankivsk’s largest developer blago builds its first aparthotel and they’re not alone. What attracts developers to the hotel market?
+      - link "View all View all" [ref=e1503] [cursor=pointer]:
+        - /url: /en/news
+        - generic [ref=e1504]:
+          - generic [ref=e1506]: View all
+          - generic [ref=e1508]: View all
+  - generic [ref=e1515]:
+    - generic [ref=e1517]:
+      - generic:
+        - generic:
+          - generic:
+            - paragraph: Each investor becomes a co-owner of a premium design hotel that redefines the concept of leisure, elevating it to a level of sensations, aesthetics, and meaning.
+            - generic:
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+              - generic:
+                - generic:
+                  - img
+          - generic:
+            - heading "Become part of the legend" [level=2]
+            - generic:
+              - generic:
+                - link "Consultation":
+                  - /url: "#"
+                  - generic:
+                    - generic:
+                      - generic: Consultation
+          - generic:
+            - generic:
+              - list:
+                - listitem:
+                  - link "+380 63 510 1101":
+                    - /url: tel:+380635101101
+                    - generic:
+                      - generic:
+                        - paragraph: +380 63 510 1101
+                - listitem:
+                  - link "sale@sondaven.com":
+                    - /url: mailto:sale@sondaven.com
+                    - generic:
+                      - generic:
+                        - paragraph: sale@sondaven.com
+        - generic:
+          - img
+    - img "Modern architecture of a high-rise building with arched columns among trees and nature." [ref=e1520]
+  - generic [ref=e1524]:
+    - generic "FAnswers to key questionsAAll you need to knowQ" [ref=e1527]:
+      - heading [level=3] [ref=e1531]
+    - list [ref=e1543]:
+      - listitem [ref=e1544]:
+        - link "If the hotel is not full, who guarantees the income?" [ref=e1545] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1547]:
+            - generic [ref=e1549]: "01"
+            - generic [ref=e1550]:
+              - heading "If the hotel is not full, who guarantees the income?" [level=4] [ref=e1551]
+              - generic [ref=e1552]:
+                - img [ref=e1555]
+                - img [ref=e1559]
+          - paragraph [ref=e1563]: Revenue depends on real workload, but our financial model is built on conservative indicators (237 days/year). In addition, there is an operating company that is responsible for marketing and booking.
+      - listitem [ref=e1568]:
+        - link "Can I live in my apartment?" [ref=e1569] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1571]:
+            - generic [ref=e1573]: "02"
+            - generic [ref=e1574]:
+              - heading "Can I live in my apartment?" [level=4] [ref=e1575]
+              - generic [ref=e1576]:
+                - img [ref=e1579]
+                - img [ref=e1583]
+          - paragraph [ref=e1587]: Yes, up to 30 days a year for free. The rest of the time the apartment works as a hotel room and brings income.
+      - listitem [ref=e1592]:
+        - link "What if I want to sell an apartment?" [ref=e1593] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1595]:
+            - generic [ref=e1597]: "03"
+            - generic [ref=e1598]:
+              - heading "What if I want to sell an apartment?" [level=4] [ref=e1599]
+              - generic [ref=e1600]:
+                - img [ref=e1603]
+                - img [ref=e1607]
+          - paragraph [ref=e1611]: You can sell it at any time. Yaremche's market capitalization is growing by 18% every year, so resale can be profitable already at the construction stage.
+      - listitem [ref=e1616]:
+        - link "Why are investors paid dividends per square meter?" [ref=e1617] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1619]:
+            - generic [ref=e1621]: "04"
+            - generic [ref=e1622]:
+              - heading "Why are investors paid dividends per square meter?" [level=4] [ref=e1623]
+              - generic [ref=e1624]:
+                - img [ref=e1627]
+                - img [ref=e1631]
+          - paragraph [ref=e1635]: "This is a fair system: the larger the area of the apartment, the higher the income. For example, 37.23 m² — ≈ 13 030 $/year."
+      - listitem [ref=e1640]:
+        - link "Are there any guarantees that the construction will be completed?" [ref=e1641] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1643]:
+            - generic [ref=e1645]: "05"
+            - generic [ref=e1646]:
+              - heading "Are there any guarantees that the construction will be completed?" [level=4] [ref=e1647]
+              - generic [ref=e1648]:
+                - img [ref=e1651]
+                - img [ref=e1655]
+          - paragraph [ref=e1659]: "The construction is carried out in stages: section 1 — IV quarter 2027, section 2 — I sq. in 2028. There is an approved schedule, licenses, open documents and a partner construction company with experience in the implementation of large objects."
+      - listitem [ref=e1664]:
+        - link "Why not just buy an apartment in Yaremche and rent it yourself?" [ref=e1665] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1667]:
+            - generic [ref=e1669]: "06"
+            - generic [ref=e1670]:
+              - heading "Why not just buy an apartment in Yaremche and rent it yourself?" [level=4] [ref=e1671]
+              - generic [ref=e1672]:
+                - img [ref=e1675]
+                - img [ref=e1679]
+          - paragraph [ref=e1683]: "Because it's a different segment. The aparthotel provides: professional service, booking through international systems, marketing and stable occupancy. Self-rental rarely exceeds 20— 30% of the load."
+      - listitem [ref=e1688]:
+        - link "Who runs the hotel?" [ref=e1689] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1691]:
+            - generic [ref=e1693]: "07"
+            - generic [ref=e1694]:
+              - heading "Who runs the hotel?" [level=4] [ref=e1695]
+              - generic [ref=e1696]:
+                - img [ref=e1699]
+                - img [ref=e1703]
+          - paragraph [ref=e1707]: Management is carried out by a professional management company with experience in the hotel business. This is the key difference from “apartment for rent”.
+      - listitem [ref=e1712]:
+        - link "How are dividends paid?" [ref=e1713] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1715]:
+            - generic [ref=e1717]: "08"
+            - generic [ref=e1718]:
+              - heading "How are dividends paid?" [level=4] [ref=e1719]
+              - generic [ref=e1720]:
+                - img [ref=e1723]
+                - img [ref=e1727]
+          - paragraph [ref=e1731]: Annually, in proportion to your apartment area. The first payments are from the first quarter of 2029.
+      - listitem [ref=e1736]:
+        - link "Is it possible to buy an apartment in installments?" [ref=e1737] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e1739]:
+            - generic [ref=e1741]: "09"
+            - generic [ref=e1742]:
+              - heading "Is it possible to buy an apartment in installments?" [level=4] [ref=e1743]
+              - generic [ref=e1744]:
+                - img [ref=e1747]
+                - img [ref=e1751]
+          - paragraph [ref=e1755]: "So, there are different payment schemes: 100%, 50/50, phased financing."
+  - generic [ref=e1767]:
+    - generic [ref=e1769]:
+      - generic [ref=e1770]:
+        - generic [ref=e1771]:
+          - heading "location" [level=3] [ref=e1772]
+          - link "I. Petrasha St., 6/3, Yaremche, Ivano-Frankivsk region" [ref=e1773] [cursor=pointer]:
+            - /url: https://www.google.com/maps/place/SON+DAVEN/data=!4m2!3m1!1s0x0:0x2235b514ab998b03
+            - paragraph [ref=e1776]: I. Petrasha St., 6/3, Yaremche, Ivano-Frankivsk region
+        - list [ref=e1779]:
+          - listitem [ref=e1780]:
+            - generic [ref=e1781]:
+              - link "Instagram" [ref=e1782] [cursor=pointer]:
+                - /url: https://www.instagram.com/son.daven
+              - img [ref=e1786]
+          - listitem [ref=e1789]:
+            - generic [ref=e1790]:
+              - link "Facebook" [ref=e1791] [cursor=pointer]:
+                - /url: https://www.facebook.com/blago.sondaven
+              - img [ref=e1795]
+          - listitem [ref=e1798]:
+            - generic [ref=e1799]:
+              - link "Youtube" [ref=e1800] [cursor=pointer]:
+                - /url: https://www.youtube.com/@SonDaven
+              - img [ref=e1804]
+      - generic [ref=e1807]:
+        - generic [ref=e1808]:
+          - heading "Sales departments" [level=3] [ref=e1809]: Sales departments
+          - link "Ivano-Frankivsk 35 Konovaltsya St." [ref=e1810] [cursor=pointer]:
+            - /url: https://maps.app.goo.gl/gHLExBJANK4KyBLq5
+            - paragraph [ref=e1813]: Ivano-Frankivsk 35 Konovaltsya St.
+        - generic [ref=e1814]:
+          - heading "Yaremche" [level=4] [ref=e1815]
+          - link "260 Svobody St." [ref=e1816] [cursor=pointer]:
+            - /url: https://maps.app.goo.gl/ba1qSfHPVeotgBLo6
+            - paragraph [ref=e1819]: 260 Svobody St.
+          - link "Svobody St., 280/1" [ref=e1820] [cursor=pointer]:
+            - /url: https://maps.app.goo.gl/iTqrcHzAsdHkXgWM7
+            - paragraph [ref=e1823]: Svobody St., 280/1
+    - list [ref=e1826]:
+      - listitem [ref=e1827]:
+        - link "+380 63 510 1101" [ref=e1828] [cursor=pointer]:
+          - /url: tel:+380635101101
+          - generic [ref=e1829]:
+            - generic [ref=e1831]: +380 63 510 1101
+            - paragraph [ref=e1833]: +380 63 510 1101
+      - listitem [ref=e1837]:
+        - link "sale@sondaven.com" [ref=e1838] [cursor=pointer]:
+          - /url: mailto:sale@sondaven.com
+          - generic [ref=e1839]:
+            - generic [ref=e1841]: sale@sondaven.com
+            - paragraph [ref=e1843]: sale@sondaven.com
+    - generic [ref=e1848]:
+      - generic [ref=e1850]: © 2026 Son Daven. All rights reserved
+      - link "Privacy Policy" [ref=e1852] [cursor=pointer]:
+        - /url: https://cdn.prod.website-files.com/6940a0abd735a1e3a640d042/69c65d477b7e07cc2855e240_Policy_Son_En.pdf
+        - generic [ref=e1853]:
+          - generic [ref=e1855]: Privacy Policy
+          - generic [ref=e1857]: Privacy Policy
+  - generic:
+    - list

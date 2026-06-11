@@ -47,3 +47,4 @@ Thumbs.db
 # ─── Logs ─────────────────────────────────────────────────────────────────────
 *.log
 logs/
+backup-branch-feat-midu.tar.gz
