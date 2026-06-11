@@ -18,7 +18,7 @@ import uvicorn
 
 from pq_ai.database import Database
 from pq_ai.search import SearchEngine
-from pq_ai.deepseek_rag import ask_rag
+from pq_ai.deepseek_rag import ask_rag, strip_reasoning, strip_html_reasoning
 from pq_ai import extractor as wiki_extractor
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -84,8 +84,6 @@ def ask(req: AskRequest):
     if not loaded:
         raise HTTPException(400, "No database")
     try:
-        all_items = [item.to_dict() if hasattr(item, 'to_dict') else item.__dict__ for item in db.get_all_items()]
-        
         # Sanitize/Truncate history
         sanitized_history = []
         if req.history:
@@ -101,6 +99,10 @@ def ask(req: AskRequest):
             truncated_history = normalized_history[-10:]
             for msg in truncated_history:
                 content = msg["content"]
+                # Strip HTML reasoning blocks and <think> tags before truncating
+                # so the 2000-char limit applies to clean text, not inflated HTML
+                content = strip_html_reasoning(content)
+                content = strip_reasoning(content)
                 if len(content) > 2000:
                     content = content[:2000] + "... [truncated]"
                 sanitized_history.append({"role": msg["role"], "content": content})

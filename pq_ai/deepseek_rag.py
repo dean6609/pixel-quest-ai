@@ -20,6 +20,20 @@ def strip_reasoning(content: str) -> str:
     return content
 
 
+def strip_html_reasoning(content: str) -> str:
+    """Remove oracle-thinking HTML blocks from content before sending as history.
+
+    The frontend stores assistant responses that include <details class="oracle-thinking">
+    blocks. When these are sent back as conversation history, they contaminate the model's
+    context and cause it to malfunction on follow-up queries.
+    """
+    if not content:
+        return content
+    content = re.sub(r'<details class="oracle-thinking">[\s\S]*?</details>\s*', '', content)
+    content = re.sub(r'\n{3,}', '\n\n', content).strip()
+    return content
+
+
 def extract_reasoning(content: str) -> tuple:
     """Extract reasoning blocks from content and convert to collapsible HTML.
     Returns (reasoning_html, clean_content)."""
@@ -62,7 +76,7 @@ def get_openai_client():
         pass
         
     api_key = os.environ.get("DEEPSEEK_API_KEY", "")
-    base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+    base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     
     if not api_key:
         return None
@@ -323,7 +337,10 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     
     if history:
         for turn in history:
-            messages.append({"role": turn["role"], "content": turn["content"]})
+            # Strip HTML reasoning blocks that were stored for display
+            # but would contaminate the model's conversation context
+            clean_content = strip_html_reasoning(turn["content"])
+            messages.append({"role": turn["role"], "content": clean_content})
             
     user_prompt = f"Consulta del jugador: {query}\n"
     if level: user_prompt += f"Nivel: {level}\n"
@@ -331,8 +348,14 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     
     messages.append({"role": "user", "content": user_prompt})
     
-    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
     MAX_TOOL_ROUNDS = 8
+
+    # DeepSeek v4 thinking mode parameters (sent via extra_body for OpenAI SDK compat)
+    thinking_params = {
+        "thinking": {"type": "enabled"},
+        "reasoning_effort": "high",
+    }
     
     try:
         for round_num in range(MAX_TOOL_ROUNDS + 1):
@@ -342,7 +365,8 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                 tools=TOOLS,
                 tool_choice="auto",
                 temperature=0.3,
-                max_tokens=3000
+                max_tokens=3000,
+                extra_body=thinking_params
             )
             
             response_message = response.choices[0].message
@@ -383,6 +407,9 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                         '</details>\n\n'
                     ) + reasoning_html
 
+                logger.info(f"Reasoning detected: api={bool(api_reasoning)}, html_blocks={bool(reasoning_html)}")
+                logger.info(f"History turns: {len(history) if history else 0}, model={model}")
+
                 # If all content was inside thinking tags, force a final answer
                 if not clean_content.strip() and reasoning_html:
                     logger.info("All content was reasoning — requesting final answer...")
@@ -392,7 +419,8 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                         model=model,
                         messages=messages,
                         temperature=0.3,
-                        max_tokens=3000
+                        max_tokens=3000,
+                        extra_body=thinking_params
                     )
                     clean_content = forced.choices[0].message.content or ""
                     extra_reasoning, clean_content = extract_reasoning(clean_content)
@@ -501,7 +529,8 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
             model=model,
             messages=messages,
             temperature=0.3,
-            max_tokens=3000
+            max_tokens=3000,
+            extra_body=thinking_params
         )
         final_content = final_response.choices[0].message.content
         logger.info(f"Forced final response length: {len(final_content) if final_content else 0}")
