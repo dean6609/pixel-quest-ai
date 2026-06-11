@@ -108,22 +108,33 @@ class Database:
         """Build cross-reference relationships."""
         from .models import Relationships
         rel = Relationships()
+
+        # item_to_enemies: item_name -> [enemy_names that drop it]
+        # enemy_to_items: enemy_name -> [item_names it drops]
         for item_name, item in self.items.items():
             for enemy_name in item.dropped_by:
-                if enemy_name not in rel.item_to_enemies:
-                    rel.item_to_enemies[enemy_name] = []
-                rel.item_to_enemies[enemy_name].append(item_name)
-                if item_name not in rel.enemy_to_items:
-                    rel.enemy_to_items[item_name] = []
-                rel.enemy_to_items[item_name].append(enemy_name)
+                # item -> enemies mapping
+                if item_name not in rel.item_to_enemies:
+                    rel.item_to_enemies[item_name] = []
+                if enemy_name not in rel.item_to_enemies[item_name]:
+                    rel.item_to_enemies[item_name].append(enemy_name)
+
+                # enemy -> items mapping
+                if enemy_name not in rel.enemy_to_items:
+                    rel.enemy_to_items[enemy_name] = []
+                if item_name not in rel.enemy_to_items[enemy_name]:
+                    rel.enemy_to_items[enemy_name].append(item_name)
+
+        # enemy_to_location: enemy_name -> location_name
+        # location_to_enemies: location_name -> [enemy_names]
         for enemy_name, enemy in self.enemies.items():
             if enemy.location:
-                if enemy_name not in rel.enemy_to_location:
-                    rel.enemy_to_location[enemy_name] = enemy.location
+                rel.enemy_to_location[enemy_name] = enemy.location
                 if enemy.location not in rel.location_to_enemies:
                     rel.location_to_enemies[enemy.location] = []
                 if enemy_name not in rel.location_to_enemies[enemy.location]:
                     rel.location_to_enemies[enemy.location].append(enemy_name)
+
         self.relationships = rel
 
     def _rebuild_index(self):

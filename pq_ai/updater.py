@@ -79,6 +79,12 @@ class WikiUpdater:
                     self.db.save_item(item)
                     logger.info(f"Synced item: {title}")
                     return True
+            elif "PQ Entity" in wikitext or "PQ_Entity" in wikitext:
+                enemy = parser.parse_enemy_wikitext(title, wikitext)
+                if enemy:
+                    self.db.save_enemy(enemy)
+                    logger.info(f"Synced enemy: {title}")
+                    return True
             elif "PQ_Location" in wikitext or "PQ Location" in wikitext:
                 location = parser.parse_location_wikitext(title, wikitext)
                 if location:
@@ -107,11 +113,11 @@ class WikiUpdater:
                         logger.info(f"Synced item (auto-detected): {title}")
                         return True
                 
-                # Check if it's an enemy page
+                # Check if it's an enemy page (PQ Entity template)
                 enemy_data = parser.parse_enemy_wikitext(title, wikitext)
                 if enemy_data:
                     self.db.save_enemy(enemy_data)
-                    logger.info(f"Synced enemy: {title}")
+                    logger.info(f"Synced enemy (auto-detected): {title}")
                     return True
             
             return False
