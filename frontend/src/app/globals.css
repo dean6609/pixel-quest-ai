@@ -245,3 +245,28 @@
     animation: none;
   }
 }
+
+.dungeon-wall {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(60, 45, 30, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.5) 0%, transparent 50%),
+    repeating-linear-gradient(90deg, #0f0b08 0, #0f0b08 48px, rgba(0,0,0,0.25) 50px),
+    repeating-linear-gradient(0deg, #120c08 0, #120c08 38px, rgba(0,0,0,0.2) 40px),
+    linear-gradient(180deg, #1a1410 0%, #0f0b08 100%);
+}
+
+.torch-flame {
+  transform-origin: center bottom;
+  animation: torchFlicker 3s ease-in-out infinite;
+}
+
+@keyframes torchFlicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 0.9; }
+  25% { transform: scaleY(1.15) scaleX(0.9); opacity: 1; }
+  50% { transform: scaleY(0.95) scaleX(1.05); opacity: 0.85; }
+  75% { transform: scaleY(1.1) scaleX(0.95); opacity: 0.95; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .torch-flame { animation: none; opacity: 0.9; }
+}
