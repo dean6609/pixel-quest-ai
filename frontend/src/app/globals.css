@@ -315,3 +315,20 @@
 @media (prefers-reduced-motion: reduce) {
   .particle-float { animation: none; opacity: 0; }
 }
+
+.hourglass-spin {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hourglass-sand {
+  animation: sandFlow 2s linear infinite;
+}
+
+@keyframes sandFlow {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hourglass-sand { animation: none; }
+}
