@@ -30,7 +30,7 @@
 | **Backend** | `FastAPI` + `Uvicorn` | API rápida y asíncrona para servir el contenido. |
 | **IA / LLM** | `DeepSeek Chat (API)` | Motor de inteligencia artificial principal. |
 | **Búsqueda** | `RAG` + `Function Calling` | Recuperación de información exacta. |
-| **Frontend** | `Next.js`, `React`, `Tailwind` | Interfaz de usuario moderna y responsiva. |
+| **Frontend** | `Next.js 15`, `React 19`, `Tailwind CSS v4`, `Turbopack` | Interfaz reconstruida con estética Good Fella Studio. |
 | **Datos** | `JSON` | Sincronizados vía web scraping del wiki. |
 
 ---
@@ -91,6 +91,8 @@ Arranca el servidor web:
 python web_app.py
 ```
 > 🌟 **¡Listo!** Abre [http://localhost:8080](http://localhost:8080) en tu navegador para empezar a usar la aplicación.
+>
+> Para desarrollo frontend con hot-reload rápido: `cd frontend && npm run dev` (usa Turbopack).
 
 ---
 
