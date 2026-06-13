@@ -140,6 +140,7 @@ type Item = {
 };
 
 function SearchTab() {
+  const shouldReduceMotion = useReducedMotion();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -262,9 +263,9 @@ function SearchTab() {
           {filteredItems.map((item, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { delay: i * 0.03, duration: 0.3 }}
             >
               <div className="doppelrand-shell cursor-pointer group transition-all duration-150 hover:border-white/20">
                 <div className="doppelrand-core p-4">
@@ -318,6 +319,7 @@ function formatChangeDate(timestamp: string): string {
 }
 
 function ChangesTab() {
+  const shouldReduceMotion = useReducedMotion();
   const [changes, setChanges] = useState<WikiChange[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -374,9 +376,9 @@ function ChangesTab() {
           {changes.map((change, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { delay: i * 0.03, duration: 0.3 }}
             >
               <div className="doppelrand-shell cursor-pointer group transition-all duration-150 hover:border-white/20">
                 <div className="doppelrand-core flex gap-4 w-full p-4">
@@ -421,6 +423,7 @@ function ChangesTab() {
 }
 
 function HistoryTab({ onClose }: { onClose: () => void }) {
+  const shouldReduceMotion = useReducedMotion();
   const {
     chats,
     activeChatId,
@@ -473,9 +476,9 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
           chats.map((chat, i) => (
             <motion.div
               key={chat.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { delay: i * 0.03, duration: 0.3 }}
             >
               <div
                 onClick={() => handleSelectChat(chat.id)}
