@@ -11,7 +11,7 @@ export default function HistoryPopup({
   open: boolean;
   onClose: () => void;
 }) {
-  const { chats, activeChatId, setActiveChat, createNewChat, deleteAllChats } = useChat();
+  const { chats, activeChatId, setActiveChatId, createNewChat, clearAllChats } = useChat();
 
   const formatDate = (ts: number) =>
     new Intl.DateTimeFormat("es-ES", {
@@ -73,7 +73,7 @@ export default function HistoryPopup({
                   <button
                     key={chat.id}
                     onClick={() => {
-                      setActiveChat(chat.id);
+                      setActiveChatId(chat.id);
                       onClose();
                     }}
                     className={`w-full text-left p-3 rounded-md border transition-all text-sm ${
@@ -95,7 +95,7 @@ export default function HistoryPopup({
               <button
                 onClick={() => {
                   if (confirm("¿Borrar todas las memorias?")) {
-                    deleteAllChats();
+                    clearAllChats();
                     onClose();
                   }
                 }}
