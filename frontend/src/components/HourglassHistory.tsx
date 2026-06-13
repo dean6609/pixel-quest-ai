@@ -1,17 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import HistoryPopup from "./HistoryPopup";
 
 export default function HourglassHistory() {
   const [open, setOpen] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <>
       <motion.button
-        whileHover={{ rotate: 15, scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={shouldReduceMotion ? {} : { rotate: 15, scale: 1.05 }}
+        whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
         onClick={() => setOpen((v) => !v)}
         className="fixed top-28 right-8 z-40 w-14 h-14 rounded-full flex items-center justify-center"
         style={{

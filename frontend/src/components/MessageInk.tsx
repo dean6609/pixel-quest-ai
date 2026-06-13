@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { marked } from "marked";
 
 function parseMarkdown(content: string): string {
@@ -35,12 +35,13 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
   );
 
   const isUser = role === "user";
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5, delay: index * 0.08 }}
       className={`flex ${isUser ? "justify-start" : "justify-end"} mb-6`}
     >
       <div
@@ -55,7 +56,7 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
         }}
       >
         <div
-          className="text-base leading-relaxed ink-text prose prose-invert max-w-none"
+          className="text-base leading-relaxed ink-text max-w-none"
           style={{ fontFamily: "var(--font-garamond)" }}
           dangerouslySetInnerHTML={{ __html: html }}
         />

@@ -1,18 +1,20 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export default function ScrollContainer({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ height: 0, opacity: 0 }}
+      initial={shouldReduceMotion ? { opacity: 1 } : { height: 0, opacity: 0 }}
       animate={{ height: "auto", opacity: 1 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className="relative w-full max-w-[900px] mx-auto parchment parchment-edge rounded-lg"
       style={{ minHeight: "60vh", maxHeight: "calc(100vh - 220px)" }}
     >
