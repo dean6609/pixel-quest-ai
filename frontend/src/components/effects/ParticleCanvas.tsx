@@ -41,6 +41,15 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     renderer.setSize(960, 945);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion) {
+      renderer.dispose();
+      return;
+    }
+
     // Main particle system - cylindrical distribution
     const particlesGeometry = new THREE.BufferGeometry();
     const count = primaryCount;
