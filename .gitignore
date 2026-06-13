@@ -55,3 +55,4 @@ sondaven-complete.html
 # ─── MCP / Internal Tools ────────────────────────────────────────────────────
 .playwright-mcp/
 .kunsdd/
+.worktrees/
