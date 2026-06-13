@@ -7,7 +7,7 @@ import { SmoothScroll } from "../components/SmoothScroll";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className="dark lenis"
+      className="dark"
       data-theme="dark"
       style={{ colorScheme: "dark" }}
     >
