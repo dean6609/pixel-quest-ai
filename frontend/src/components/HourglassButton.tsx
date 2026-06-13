@@ -17,7 +17,7 @@ export default function HourglassButton() {
       <button
         data-testid="hourglass-button"
         onClick={handleClick}
-        className="hourglass-spin fixed top-28 right-8 z-40 w-16 h-16 rounded-full flex items-center justify-center"
+        className="hourglass-spin static lg:fixed lg:top-28 lg:right-8 lg:z-40 w-16 h-16 rounded-full flex items-center justify-center"
         style={{
           transform: `rotate(${spins * 180}deg)`,
           background: "rgba(232, 220, 196, 0.12)",
