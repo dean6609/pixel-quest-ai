@@ -242,18 +242,18 @@
     animation: var(--animate-slide-up);
   }
 
-  .grid-span-1 { grid-column: span 1; }
-  .grid-span-2 { grid-column: span 2; }
-  .grid-span-3 { grid-column: span 3; }
-  .grid-span-4 { grid-column: span 4; }
-  .grid-span-5 { grid-column: span 5; }
-  .grid-span-6 { grid-column: span 6; }
-  .grid-span-7 { grid-column: span 7; }
-  .grid-span-8 { grid-column: span 8; }
-  .grid-span-9 { grid-column: span 9; }
-  .grid-span-10 { grid-column: span 10; }
-  .grid-span-11 { grid-column: span 11; }
-  .grid-span-12 { grid-column: span 12; }
+  .grid-span-1 { grid-column: span 1 / span 1; }
+  .grid-span-2 { grid-column: span 2 / span 2; }
+  .grid-span-3 { grid-column: span 3 / span 3; }
+  .grid-span-4 { grid-column: span 4 / span 4; }
+  .grid-span-5 { grid-column: span 5 / span 5; }
+  .grid-span-6 { grid-column: span 6 / span 6; }
+  .grid-span-7 { grid-column: span 7 / span 7; }
+  .grid-span-8 { grid-column: span 8 / span 8; }
+  .grid-span-9 { grid-column: span 9 / span 9; }
+  .grid-span-10 { grid-column: span 10 / span 10; }
+  .grid-span-11 { grid-column: span 11 / span 11; }
+  .grid-span-12 { grid-column: span 12 / span 12; }
 
   .grid-start-1 { grid-column-start: 1; }
   .grid-start-2 { grid-column-start: 2; }
@@ -267,18 +267,18 @@
   .grid-start-10 { grid-column-start: 10; }
 
   @media (min-width: 1024px) {
-    .lg\:grid-span-1 { grid-column: span 1; }
-    .lg\:grid-span-2 { grid-column: span 2; }
-    .lg\:grid-span-3 { grid-column: span 3; }
-    .lg\:grid-span-4 { grid-column: span 4; }
-    .lg\:grid-span-5 { grid-column: span 5; }
-    .lg\:grid-span-6 { grid-column: span 6; }
-    .lg\:grid-span-7 { grid-column: span 7; }
-    .lg\:grid-span-8 { grid-column: span 8; }
-    .lg\:grid-span-9 { grid-column: span 9; }
-    .lg\:grid-span-10 { grid-column: span 10; }
-    .lg\:grid-span-11 { grid-column: span 11; }
-    .lg\:grid-span-12 { grid-column: span 12; }
+    .lg\:grid-span-1 { grid-column: span 1 / span 1; }
+    .lg\:grid-span-2 { grid-column: span 2 / span 2; }
+    .lg\:grid-span-3 { grid-column: span 3 / span 3; }
+    .lg\:grid-span-4 { grid-column: span 4 / span 4; }
+    .lg\:grid-span-5 { grid-column: span 5 / span 5; }
+    .lg\:grid-span-6 { grid-column: span 6 / span 6; }
+    .lg\:grid-span-7 { grid-column: span 7 / span 7; }
+    .lg\:grid-span-8 { grid-column: span 8 / span 8; }
+    .lg\:grid-span-9 { grid-column: span 9 / span 9; }
+    .lg\:grid-span-10 { grid-column: span 10 / span 10; }
+    .lg\:grid-span-11 { grid-column: span 11 / span 11; }
+    .lg\:grid-span-12 { grid-column: span 12 / span 12; }
 
     .lg\:grid-start-1 { grid-column-start: 1; }
     .lg\:grid-start-2 { grid-column-start: 2; }
