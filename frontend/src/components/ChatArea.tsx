@@ -1,30 +1,21 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, memo } from "react";
 import { marked } from "marked";
 import { Send, Sparkles } from "lucide-react";
 import { useChat } from "../context/ChatContext";
 import { useStaggerScrollAnimation } from "../hooks/useScrollAnimation";
 import ScrambleText from "./effects/ScrambleText";
 
-// Configure marked to open external links in new tabs
-marked.use({
-  useNewRenderer: true,
-  renderer: {
-    link({ href, title, text }: any) {
-      const titleAttr = title ? ` title="${title}"` : "";
-      if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
-        return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
-      }
-      return `<a href="${href}"${titleAttr}>${text}</a>`;
-    },
-  },
-});
-
 // Safely parse markdown synchronously (marked v13 parse() may return Promise)
 function parseMarkdown(content: string): string {
   const result = marked.parse(content);
-  return typeof result === "string" ? result : "";
+  const html = typeof result === "string" ? result : "";
+  // Open external links in new tabs
+  return html.replace(
+    /<a href="(https?:\/\/[^"]+)"/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer"'
+  );
 }
 
 // Sanitize content to remove tool call tags and other artifacts
@@ -37,20 +28,24 @@ function sanitizeContent(content: string): string {
     .trim();
 }
 
+const suggestions = [
+  "¿Cuál es el mejor arco para empezar?",
+  "¿Qué drops tiene el Slime King?",
+  "Recomiéndame una build de daño T4",
+  "¿Para qué sirve el Valor Bonus?",
+];
+
 // Animated watermark letters background
 function WatermarkBackground({ visible }: { visible: boolean }) {
   const letters = "Pixel Quest".split("");
 
-  if (!visible) return null;
-
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
-      style={{
-        zIndex: 0,
-        opacity: visible ? 1 : 0,
-        transition: "opacity 0.6s ease-out",
-      }}
+      className={`absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden transition-opacity duration-700 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+      style={{ zIndex: 0 }}
+      aria-hidden="true"
     >
       <div className="flex" style={{ gap: "0.25rem" }}>
         {letters.map((letter, index) => (
@@ -75,12 +70,91 @@ function WatermarkBackground({ visible }: { visible: boolean }) {
   );
 }
 
+type MessageBubbleProps = {
+  role: "user" | "assistant";
+  content: string;
+  index: number;
+};
+
+const MessageBubble = memo(function MessageBubble({
+  role,
+  content,
+  index,
+}: MessageBubbleProps) {
+  const html = useMemo(
+    () => parseMarkdown(sanitizeContent(content)),
+    [content]
+  );
+
+  const isUser = role === "user";
+
+  return (
+    <div
+      className="animate-fade-in"
+      style={{
+        animationDelay: `${index * 30}ms`,
+        animationFillMode: "both",
+      }}
+    >
+      {isUser ? (
+        <div className="flex flex-col items-end">
+          <div className="doppelrand-bubble max-w-[80%]">
+            <div className="doppelrand-bubble-core p-4">
+              <p
+                className="whitespace-pre-wrap leading-relaxed text-base"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                {content}
+              </p>
+            </div>
+          </div>
+          <span
+            className="text-xs mt-1 mr-1 uppercase tracking-wider"
+            style={{ color: "var(--color-foreground-muted)" }}
+          >
+            Adventurer
+          </span>
+        </div>
+      ) : (
+        <div className="flex flex-col items-start">
+          <div className="flex gap-4 items-start w-full max-w-3xl">
+            <div className="glass-panel w-10 h-10 shrink-0 rounded-full items-center justify-center relative overflow-hidden hidden md:flex">
+              <Sparkles size={20} style={{ color: "var(--color-brand)" }} />
+            </div>
+            <div className="doppelrand-bubble flex-1 min-w-0">
+              <div className="doppelrand-bubble-core p-5 relative overflow-hidden">
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.02)",
+                  }}
+                />
+                <div
+                  className="leading-relaxed relative z-10 prose prose-invert max-w-none text-base"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              </div>
+            </div>
+          </div>
+          <span
+            className="text-xs mt-1 ml-0 md:ml-14 uppercase tracking-wider"
+            style={{ color: "var(--color-foreground-muted)" }}
+          >
+            Oracle
+          </span>
+        </div>
+      )}
+    </div>
+  );
+});
+
 export default function ChatArea() {
   const { activeChatId, activeChat, createNewChat, addMessage } = useChat();
   const messages = useMemo(() => activeChat?.messages || [], [activeChat]);
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useStaggerScrollAnimation<HTMLDivElement>({
     stagger: 0.1,
@@ -98,7 +172,7 @@ export default function ChatArea() {
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages, isLoading]);
+  }, [messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +180,7 @@ export default function ChatArea() {
 
     const userMessage = input.trim();
     setInput("");
+    setError(null);
 
     let currentChatId = activeChatId;
     if (!currentChatId) {
@@ -132,8 +207,11 @@ export default function ChatArea() {
         role: "assistant",
         content: data.response,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unknown error";
+      console.error(err);
+      setError(message);
       addMessage(currentChatId, {
         role: "assistant",
         content:
@@ -152,7 +230,7 @@ export default function ChatArea() {
       <div className="grid-container flex-1 min-h-0">
         <div className="grid-layout flex-1 min-h-0">
           <div className="grid-span-12 lg:grid-span-8 lg:grid-start-3 relative flex flex-col min-h-0">
-            {/* Watermark Background - desaparece al iniciar conversación */}
+            {/* Watermark Background - fades when conversation starts */}
             <WatermarkBackground visible={!hasMessages} />
 
             <div
@@ -181,17 +259,13 @@ export default function ChatArea() {
                       ref={suggestionsRef}
                       className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl"
                     >
-                      {[
-                        "¿Cuál es el mejor arco para empezar?",
-                        "¿Qué drops tiene el Slime King?",
-                        "Recomiéndame una build de daño T4",
-                        "¿Para qué sirve el Valor Bonus?",
-                      ].map((q, i) => (
+                      {suggestions.map((q, i) => (
                         <button
                           key={i}
                           data-animate
                           onClick={() => setInput(q)}
                           className="doppelrand-bubble text-left transition-all duration-200 group hover:border-white/20"
+                          type="button"
                         >
                           <div className="doppelrand-bubble-core p-4">
                             <p
@@ -208,73 +282,21 @@ export default function ChatArea() {
                 ) : (
                   <div className="space-y-6 py-4">
                     {messages.map((msg, idx) => (
-                      <div
+                      <MessageBubble
                         key={idx}
-                        className="animate-fade-in"
-                        style={{
-                          animationDelay: `${idx * 30}ms`,
-                          animationFillMode: "both",
-                        }}
-                      >
-                        {msg.role === "user" ? (
-                          <div className="flex flex-col items-end">
-                            <div className="doppelrand-bubble max-w-[80%]">
-                              <div className="doppelrand-bubble-core p-4">
-                                <p
-                                  className="whitespace-pre-wrap leading-relaxed text-base"
-                                  style={{ color: "var(--color-foreground)" }}
-                                >
-                                  {msg.content}
-                                </p>
-                              </div>
-                            </div>
-                            <span
-                              className="text-xs mt-1 mr-1 uppercase tracking-wider"
-                              style={{ color: "var(--color-foreground-muted)" }}
-                            >
-                              Adventurer
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-start">
-                            <div className="flex gap-4 items-start w-full max-w-3xl">
-                              <div className="glass-panel w-10 h-10 shrink-0 rounded-full items-center justify-center relative overflow-hidden hidden md:flex">
-                                <Sparkles
-                                  size={20}
-                                  style={{ color: "var(--color-brand)" }}
-                                />
-                              </div>
-                              <div className="doppelrand-bubble flex-1 min-w-0">
-                                <div className="doppelrand-bubble-core p-5 relative overflow-hidden">
-                                  <div
-                                    className="absolute inset-0 pointer-events-none"
-                                    style={{
-                                      background: "rgba(255, 255, 255, 0.02)",
-                                    }}
-                                  />
-                                  <div
-                                    className="leading-relaxed relative z-10 prose prose-invert max-w-none text-base"
-                                    dangerouslySetInnerHTML={{
-                                      __html: parseMarkdown(sanitizeContent(msg.content)),
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <span
-                              className="text-xs mt-1 ml-0 md:ml-14 uppercase tracking-wider"
-                              style={{ color: "var(--color-foreground-muted)" }}
-                            >
-                              Oracle
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                        index={idx}
+                        role={msg.role}
+                        content={msg.content}
+                      />
                     ))}
 
                     {isLoading && (
-                      <div className="flex gap-4 items-center ml-0 md:ml-14">
-                        <div className="flex gap-1">
+                      <div
+                        className="flex gap-4 items-center ml-0 md:ml-14"
+                        aria-live="polite"
+                        aria-busy="true"
+                      >
+                        <div className="flex gap-1" aria-hidden="true">
                           <div
                             className="w-1.5 h-1.5 rounded-full animate-bounce"
                             style={{ background: "var(--color-foreground-muted)" }}
@@ -300,6 +322,15 @@ export default function ChatArea() {
                         >
                           Oracle is manifesting an answer...
                         </span>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div
+                        role="alert"
+                        className="ml-0 md:ml-14 p-3 rounded-xl text-sm border border-red-500/30 bg-red-500/10 text-red-400"
+                      >
+                        Error: {error}
                       </div>
                     )}
                   </div>
@@ -336,6 +367,7 @@ export default function ChatArea() {
                     }
                   }}
                   placeholder="Whisper to the Oracle..."
+                  aria-label="Mensaje para el Oracle"
                   className="flex-grow bg-transparent border-none focus:ring-0 text-base resize-none py-3 px-4 outline-none"
                   style={{ color: "var(--color-foreground)" }}
                   rows={1}
@@ -356,6 +388,7 @@ export default function ChatArea() {
                     background: "transparent",
                     border: "none",
                   }}
+                  aria-label="Enviar mensaje"
                 >
                   <span
                     className="hidden md:inline font-bold text-sm"

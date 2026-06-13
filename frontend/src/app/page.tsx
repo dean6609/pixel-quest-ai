@@ -2,7 +2,7 @@ import ClientLayout from "@/components/ClientLayout";
 
 export default function Home() {
   return (
-    <main
+    <div
       className="relative min-h-[100svh] w-full overflow-hidden antialiased"
       style={{
         background: "var(--color-background)",
@@ -10,6 +10,6 @@ export default function Home() {
       }}
     >
       <ClientLayout />
-    </main>
+    </div>
   );
 }

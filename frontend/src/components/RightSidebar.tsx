@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Search,
   Activity,
@@ -22,142 +22,176 @@ type Tab = "search" | "changes" | "history";
 
 export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState<Tab>("search");
+  const shouldReduceMotion = useReducedMotion();
+
+  const transition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: 0.4, ease: [0.76, 0, 0.24, 1] as const };
 
   return (
-    <>
-      {/* Backdrop */}
-      <motion.div
-        className="fixed inset-0 z-40"
-        style={{
-          background: "rgba(20, 19, 20, 0.8)",
-          backdropFilter: "blur(0.5rem)",
-        }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        onClick={onClose}
-      />
-
-      {/* Sidebar */}
-      <motion.div
-        className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 flex flex-col glass-panel border-l"
-        style={{
-          borderColor: "var(--color-border)",
-        }}
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{
-          duration: 0.4,
-          ease: [0.76, 0, 0.24, 1], // --ease-in-out-quart
-        }}
-      >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between p-6 border-b"
-          style={{
-            borderColor: "var(--color-border-muted)",
-            background: "rgba(20, 19, 20, 0.3)",
-          }}
-        >
-          <h3
-            className="text-lg font-semibold"
-            style={{ color: "var(--color-foreground)" }}
-          >
-            Tools
-          </h3>
-          <button
+    <AnimatePresence mode="sync">
+      {isOpen && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-40"
+            style={{
+              background: "rgba(20, 19, 20, 0.8)",
+              backdropFilter: "blur(0.5rem)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.3 }}
             onClick={onClose}
-            className="p-2 rounded-full transition-colors duration-150 hover:bg-white/5"
-            style={{ color: "var(--color-foreground-muted)" }}
-          >
-            <X size={20} />
-          </button>
-        </div>
+            aria-hidden="true"
+          />
 
-        {/* Tab Navigation */}
-        <div
-          className="flex p-4 gap-2 border-b"
-          style={{ borderColor: "var(--color-border-muted)" }}
-        >
-          {(["search", "history", "changes"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all duration-150 text-sm font-medium hover:bg-white/5"
+          <motion.div
+            className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 flex flex-col glass-panel border-l"
+            style={{
+              borderColor: "var(--color-border)",
+            }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={transition}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Herramientas"
+          >
+            {/* Header */}
+            <div
+              className="flex items-center justify-between p-6 border-b"
               style={{
-                background:
-                  activeTab === tab
-                    ? "rgba(255, 255, 255, 0.05)"
-                    : "transparent",
-                color:
-                  activeTab === tab
-                    ? "var(--color-foreground)"
-                    : "var(--color-foreground-muted)",
+                borderColor: "var(--color-border-muted)",
+                background: "rgba(20, 19, 20, 0.3)",
               }}
             >
-              {tab === "search" && <Search size={16} />}
-              {tab === "history" && <MessageSquare size={16} />}
-              {tab === "changes" && <Activity size={16} />}
-              <span className="hidden sm:inline capitalize">{tab}</span>
-            </button>
-          ))}
-        </div>
+              <h3
+                className="text-lg font-semibold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                Tools
+              </h3>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-full transition-colors duration-150 hover:bg-white/5"
+                style={{ color: "var(--color-foreground-muted)" }}
+                aria-label="Cerrar herramientas"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {activeTab === "search" && <SearchTab />}
-          {activeTab === "changes" && <ChangesTab />}
-          {activeTab === "history" && <HistoryTab onClose={onClose} />}
-        </div>
-      </motion.div>
-    </>
+            {/* Tab Navigation */}
+            <div
+              className="flex p-4 gap-2 border-b"
+              style={{ borderColor: "var(--color-border-muted)" }}
+              role="tablist"
+              aria-label="Pestañas de herramientas"
+            >
+              {(["search", "history", "changes"] as Tab[]).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all duration-150 text-sm font-medium hover:bg-white/5"
+                  style={{
+                    background:
+                      activeTab === tab
+                        ? "rgba(255, 255, 255, 0.05)"
+                        : "transparent",
+                    color:
+                      activeTab === tab
+                        ? "var(--color-foreground)"
+                        : "var(--color-foreground-muted)",
+                  }}
+                  aria-label={tab}
+                >
+                  {tab === "search" && <Search size={16} aria-hidden="true" />}
+                  {tab === "history" && <MessageSquare size={16} aria-hidden="true" />}
+                  {tab === "changes" && <Activity size={16} aria-hidden="true" />}
+                  <span className="hidden sm:inline capitalize">{tab}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4" role="tabpanel">
+              {activeTab === "search" && <SearchTab />}
+              {activeTab === "changes" && <ChangesTab />}
+              {activeTab === "history" && <HistoryTab onClose={onClose} />}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
-// --- SUB-COMPONENTS ---
+type Item = {
+  name: string;
+  item_type?: string;
+  tier?: string;
+  [key: string]: unknown;
+};
 
 function SearchTab() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [tiers, setTiers] = useState<string[]>([]);
   const [selectedTier, setSelectedTier] = useState("");
 
   useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/items?limit=100", { signal });
+        const data = await res.json();
+        setItems(data.items || []);
+      } catch (e) {
+        if (!(e instanceof Error && e.name === "AbortError")) {
+          console.error(e);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchTiers = async () => {
+      try {
+        const res = await fetch("/api/tiers", { signal });
+        const data = await res.json();
+        setTiers(data || []);
+      } catch (e) {
+        if (!(e instanceof Error && e.name === "AbortError")) {
+          console.error(e);
+        }
+      }
+    };
+
     fetchItems();
     fetchTiers();
+
+    return () => abortController.abort();
   }, []);
 
-  const fetchItems = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/items?limit=100");
-      const data = await res.json();
-      setItems(data.items || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTiers = async () => {
-    try {
-      const res = await fetch("/api/tiers");
-      const data = await res.json();
-      setTiers(data || []);
-    } catch (e) {}
-  };
-
-  const filteredItems = items.filter((item) => {
-    const matchesQuery =
-      item.name?.toLowerCase().includes(query.toLowerCase()) ||
-      item.item_type?.toLowerCase().includes(query.toLowerCase());
-    const matchesTier = selectedTier ? item.tier === selectedTier : true;
-    return matchesQuery && matchesTier;
-  });
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesQuery =
+        item.name?.toLowerCase().includes(query.toLowerCase()) ||
+        item.item_type?.toLowerCase().includes(query.toLowerCase());
+      const matchesTier = selectedTier ? item.tier === selectedTier : true;
+      return matchesQuery && matchesTier;
+    });
+  }, [items, query, selectedTier]);
 
   return (
     <div className="space-y-4">
@@ -167,6 +201,7 @@ function SearchTab() {
             size={16}
             className="ml-2 shrink-0"
             style={{ color: "var(--color-foreground-muted)" }}
+            aria-hidden="true"
           />
           <input
             type="text"
@@ -175,6 +210,7 @@ function SearchTab() {
             onChange={(e) => setQuery(e.target.value)}
             className="flex-grow bg-transparent border-none focus:ring-0 text-base py-2 outline-none"
             style={{ color: "var(--color-foreground)" }}
+            aria-label="Buscar items"
           />
         </div>
         <select
@@ -186,6 +222,7 @@ function SearchTab() {
             border: "1px solid var(--color-border)",
             color: "var(--color-foreground)",
           }}
+          aria-label="Filtrar por tier"
         >
           <option
             value=""
@@ -211,6 +248,7 @@ function SearchTab() {
             size={24}
             className="animate-spin"
             style={{ color: "var(--color-brand)" }}
+            aria-hidden="true"
           />
         </div>
       ) : (
@@ -266,23 +304,44 @@ function SearchTab() {
   );
 }
 
+type WikiChange = {
+  title: string;
+  version?: string;
+  timestamp: string;
+  [key: string]: unknown;
+};
+
+function formatChangeDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return "Unknown date";
+  return date.toLocaleDateString();
+}
+
 function ChangesTab() {
-  const [changes, setChanges] = useState<any[]>([]);
+  const [changes, setChanges] = useState<WikiChange[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
     const fetchChanges = async () => {
       try {
-        const res = await fetch("/api/changes?limit=20");
+        const res = await fetch("/api/changes?limit=20", { signal });
         const data = await res.json();
         setChanges(data.changes || []);
       } catch (e) {
-        console.error(e);
+        if (!(e instanceof Error && e.name === "AbortError")) {
+          console.error(e);
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchChanges();
+
+    return () => abortController.abort();
   }, []);
 
   return (
@@ -300,6 +359,7 @@ function ChangesTab() {
             size={24}
             className="animate-spin"
             style={{ color: "var(--color-brand)" }}
+            aria-hidden="true"
           />
         </div>
       ) : changes.length === 0 ? (
@@ -347,9 +407,7 @@ function ChangesTab() {
                         {change.version || "Update"}
                       </span>
                       <span>•</span>
-                      <span>
-                        {new Date(change.timestamp).toLocaleDateString()}
-                      </span>
+                      <span>{formatChangeDate(change.timestamp)}</span>
                     </div>
                   </div>
                 </div>
@@ -385,6 +443,7 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col h-full space-y-4">
       <button
+        type="button"
         onClick={handleNewChat}
         className="group doppelrand-shell flex justify-between items-center pl-5 pr-2 py-2 transition-all duration-150 hover:border-white/20"
       >
@@ -452,13 +511,14 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     deleteChat(chat.id);
                   }}
                   className="p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-150 hover:bg-red-500/10 hover:text-red-500"
                   style={{ color: "var(--color-foreground-muted)" }}
-                  title="Forget memory"
+                  aria-label={`Olvidar conversación ${chat.title}`}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -470,6 +530,7 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
 
       {chats.length > 0 && (
         <button
+          type="button"
           onClick={clearAllChats}
           className="w-full mt-4 flex items-center justify-center gap-2 p-4 rounded-xl transition-all duration-150 text-sm hover:bg-red-500/10"
           style={{

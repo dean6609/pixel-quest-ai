@@ -24,10 +24,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 borderColor: "var(--color-border)",
                 color: "var(--color-foreground-muted)",
               }}
+              role="status"
+              aria-label="Estado: Oracle Online"
             >
               <span
                 className="w-1.5 h-1.5 rounded-full animate-pulse-custom"
                 style={{ background: "var(--color-brand)" }}
+                aria-hidden="true"
               />
               Oracle Online
             </span>
@@ -35,6 +38,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
           <div className="grid-span-6 lg:grid-span-3 lg:grid-start-10 flex justify-end pointer-events-auto">
             <button
+              type="button"
               onClick={onMenuClick}
               className="btn-press glass-panel rounded-full p-3 transition-colors duration-200 hover:bg-white/5"
               aria-label="Abrir herramientas"
