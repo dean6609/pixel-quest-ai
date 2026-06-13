@@ -298,3 +298,20 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-orb-glow { animation: none; }
 }
+
+.particle-float {
+  animation-name: particleRise;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes particleRise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { transform: translateY(-40vh) translateX(10px); opacity: 0.6; }
+  100% { transform: translateY(-80vh) translateX(-10px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particle-float { animation: none; opacity: 0; }
+}
