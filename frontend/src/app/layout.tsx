@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
+import { Inter, DM_Mono } from "next/font/google";
 import "./globals.css";
 import GSAPProvider from "../components/effects/GSAPProvider";
 import { SmoothScroll } from "../components/SmoothScroll";
@@ -11,9 +10,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+const dmMono = DM_Mono({
+  weight: ["300", "400", "500"],
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -32,13 +32,7 @@ export default function RootLayout({
       data-theme="dark"
       style={{ colorScheme: "dark" }}
     >
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={`${inter.variable} ${geistMono.variable}`}>
+      <body className={`${inter.variable} ${dmMono.variable}`}>
         <GSAPProvider>
           <SmoothScroll>{children}</SmoothScroll>
         </GSAPProvider>
