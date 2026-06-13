@@ -1,0 +1,44 @@
+"use client";
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import HistoryPopup from "./HistoryPopup";
+
+export default function HourglassHistory() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <motion.button
+        whileHover={{ rotate: 15, scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setOpen((v) => !v)}
+        className="fixed top-28 right-8 z-40 w-14 h-14 rounded-full flex items-center justify-center"
+        style={{
+          background: "rgba(232, 220, 196, 0.12)",
+          border: "1px solid rgba(232, 220, 196, 0.25)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+        }}
+        aria-label="Abrir historial"
+        title="Historial"
+      >
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--color-gold)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 22h14" />
+          <path d="M5 2h14" />
+          <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+          <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+        </svg>
+      </motion.button>
+      <HistoryPopup open={open} onClose={() => setOpen(false)} />
+    </>
+  );
+}
