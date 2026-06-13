@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
 import { useChat } from "../context/ChatContext";
+import { useStaggerScrollAnimation } from "../hooks/useScrollAnimation";
 
 // Configure marked to open external links in new tabs
 marked.use({
@@ -79,6 +80,13 @@ export default function ChatArea() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useStaggerScrollAnimation<HTMLDivElement>({
+    stagger: 0.1,
+    y: 20,
+    duration: 0.6,
+    triggerOnMount: true,
+    mountDelay: 0.4,
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -158,7 +166,7 @@ export default function ChatArea() {
                 Ask me about builds, items, stats, or where to find enemies in
                 your adventure.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+              <div ref={suggestionsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
                 {[
                   "¿Cuál es el mejor arco para empezar?",
                   "¿Qué drops tiene el Slime King?",
@@ -167,6 +175,7 @@ export default function ChatArea() {
                 ].map((q, i) => (
                   <button
                     key={i}
+                    data-animate
                     onClick={() => setInput(q)}
                     className="text-left transition-all duration-200 group"
                     style={{

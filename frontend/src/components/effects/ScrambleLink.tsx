@@ -17,6 +17,9 @@ export default function ScrambleLink({
     if (spanRef.current) {
       scrambleRef.current = new TextScramble(spanRef.current);
     }
+    return () => {
+      scrambleRef.current?.cancel();
+    };
   }, []);
 
   const handleMouseEnter = () => {
@@ -26,13 +29,14 @@ export default function ScrambleLink({
   return (
     <a
       href={href}
-      className="relative inline-block whitespace-nowrap text-[var(--color-foreground-muted)] transition-colors duration-300 hover:text-[var(--color-foreground)]"
+      className="relative inline-block whitespace-nowrap text-[var(--color-foreground-muted)] transition-colors duration-300 hover:text-[var(--color-foreground)] link-underline"
       onMouseEnter={handleMouseEnter}
     >
       <span className="sr-only">{children}</span>
-      <span style={{ visibility: "hidden" }}>{children}</span>
+      <span aria-hidden="true" style={{ visibility: "hidden" }}>{children}</span>
       <span
         ref={spanRef}
+        aria-hidden="true"
         style={{
           position: "absolute",
           left: 0,

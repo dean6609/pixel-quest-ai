@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useChat } from "../context/ChatContext";
 
 type RightSidebarProps = {
@@ -16,27 +17,34 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
   return (
     <>
       {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 transition-opacity duration-300"
-          style={{
-            background: "rgba(20, 19, 20, 0.8)",
-            backdropFilter: "blur(0.5rem)",
-          }}
-          onClick={onClose}
-        />
-      )}
+      <motion.div
+        className="fixed inset-0 z-40"
+        style={{
+          background: "rgba(20, 19, 20, 0.8)",
+          backdropFilter: "blur(0.5rem)",
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={onClose}
+      />
 
       {/* Sidebar */}
-      <div
-        className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 transform transition-transform duration-[400ms] flex flex-col"
+      <motion.div
+        className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 flex flex-col"
         style={{
           background: "rgba(26, 26, 26, 0.95)",
           backdropFilter: "blur(2rem)",
           WebkitBackdropFilter: "blur(2rem)",
           borderLeft: "1px solid var(--color-border)",
-          transitionTimingFunction: "var(--ease-power4-in-out)",
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
+        }}
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{
+          duration: 0.4,
+          ease: [0.76, 0, 0.24, 1], // --ease-in-out-quart
         }}
       >
         {/* Header */}
@@ -147,7 +155,7 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
           {activeTab === "changes" && <ChangesTab />}
           {activeTab === "history" && <HistoryTab onClose={onClose} />}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -277,16 +285,19 @@ function SearchTab() {
             {filteredItems.length} results found
           </div>
           {filteredItems.map((item, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03, duration: 0.3 }}
+            >
+            <div
               className="cursor-pointer group transition-all duration-150"
               style={{
                 background: "rgba(255, 255, 255, 0.02)",
                 padding: "6px",
                 borderRadius: "2rem",
                 border: "1px solid var(--color-border)",
-                animationDelay: `${i * 30}ms`,
-                animationFillMode: "both",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
@@ -330,6 +341,7 @@ function SearchTab() {
                 </div>
               </div>
             </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -387,16 +399,19 @@ function ChangesTab() {
       ) : (
         <div className="space-y-2">
           {changes.map((change, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03, duration: 0.3 }}
+            >
+            <div
               className="flex gap-4 cursor-pointer group transition-all duration-150"
               style={{
                 background: "rgba(255, 255, 255, 0.02)",
                 padding: "6px",
                 borderRadius: "2rem",
                 border: "1px solid var(--color-border)",
-                animationDelay: `${i * 30}ms`,
-                animationFillMode: "both",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
@@ -447,6 +462,7 @@ function ChangesTab() {
                 </div>
               </div>
             </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -517,8 +533,13 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           chats.map((chat, i) => (
-            <div
+            <motion.div
               key={chat.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03, duration: 0.3 }}
+            >
+            <div
               onClick={() => {
                 setActiveChatId(chat.id);
               }}
@@ -531,8 +552,6 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
                     ? "rgba(255, 255, 255, 0.3)"
                     : "var(--color-border-muted)"
                 }`,
-                animationDelay: `${i * 30}ms`,
-                animationFillMode: "both",
               }}
               onMouseEnter={(e) => {
                 if (chat.id !== activeChatId) {
@@ -595,6 +614,7 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
                 </svg>
               </button>
             </div>
+            </motion.div>
           ))
         )}
       </div>

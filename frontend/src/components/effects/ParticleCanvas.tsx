@@ -13,9 +13,25 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     const canvas = canvasRef.current;
     const container = containerRef.current;
 
+    // Performance check for low-end devices
+    const isLowEnd =
+      typeof navigator !== "undefined" &&
+      (navigator.hardwareConcurrency || 4) < 4;
+    const primaryCount = isLowEnd ? 1500 : 3000;
+    const secondaryCount = isLowEnd ? 250 : 500;
+
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    // No scene background — canvas must be transparent so content is visible underneath
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
     camera.position.z = 5;
+
+    // Mouse parallax
+    const mouse = { x: 0, y: 0 };
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -25,9 +41,9 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     renderer.setSize(960, 945);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Main particle system
+    // Main particle system - cylindrical distribution
     const particlesGeometry = new THREE.BufferGeometry();
-    const count = 2000;
+    const count = primaryCount;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
 
@@ -35,12 +51,19 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     const surfaceColor = new THREE.Color("#333333");
 
     for (let i = 0; i < count * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 10;
-      positions[i + 1] = (Math.random() - 0.5) * 10;
-      positions[i + 2] = (Math.random() - 0.5) * 10;
+      const radius = 5 + Math.random() * 20;
+      const theta = Math.random() * Math.PI * 2;
+
+      positions[i] = Math.cos(theta) * radius * (0.5 + Math.random() * 0.5);
+      positions[i + 1] = (Math.random() - 0.5) * 35;
+      positions[i + 2] =
+        Math.sin(theta) * radius * 0.3 + (Math.random() - 0.5) * 5;
 
       const mixFactor = Math.random();
       const color = brandColor.clone().lerp(surfaceColor, mixFactor);
+      if (Math.random() > 0.7) {
+        color.lerp(new THREE.Color(0xffffff), 0.1);
+      }
       colors[i] = color.r;
       colors[i + 1] = color.g;
       colors[i + 2] = color.b;
@@ -68,56 +91,69 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     const particles = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particles);
 
-    // Second layer - smaller particles for depth
-    const depthGeometry = new THREE.BufferGeometry();
-    const depthCount = 1000;
-    const depthPositions = new Float32Array(depthCount * 3);
-    const depthColors = new Float32Array(depthCount * 3);
+    // Secondary particles - larger, more transparent for depth parallax
+    const secondaryGeometry = new THREE.BufferGeometry();
+    const secCount = secondaryCount;
+    const secondaryPositions = new Float32Array(secCount * 3);
+    const secondaryColors = new Float32Array(secCount * 3);
 
-    for (let i = 0; i < depthCount * 3; i += 3) {
-      depthPositions[i] = (Math.random() - 0.5) * 15;
-      depthPositions[i + 1] = (Math.random() - 0.5) * 15;
-      depthPositions[i + 2] = (Math.random() - 0.5) * 15;
+    for (let i = 0; i < secCount * 3; i += 3) {
+      const radius = 8 + Math.random() * 25;
+      const theta = Math.random() * Math.PI * 2;
+
+      secondaryPositions[i] =
+        Math.cos(theta) * radius * (0.5 + Math.random() * 0.5);
+      secondaryPositions[i + 1] = (Math.random() - 0.5) * 40;
+      secondaryPositions[i + 2] =
+        Math.sin(theta) * radius * 0.3 + (Math.random() - 0.5) * 8;
 
       const mixFactor = Math.random() * 0.5 + 0.5;
       const color = brandColor.clone().lerp(surfaceColor, mixFactor);
-      depthColors[i] = color.r;
-      depthColors[i + 1] = color.g;
-      depthColors[i + 2] = color.b;
+      secondaryColors[i] = color.r;
+      secondaryColors[i + 1] = color.g;
+      secondaryColors[i + 2] = color.b;
     }
 
-    depthGeometry.setAttribute(
+    secondaryGeometry.setAttribute(
       "position",
-      new THREE.BufferAttribute(depthPositions, 3)
+      new THREE.BufferAttribute(secondaryPositions, 3)
     );
-    depthGeometry.setAttribute(
+    secondaryGeometry.setAttribute(
       "color",
-      new THREE.BufferAttribute(depthColors, 3)
+      new THREE.BufferAttribute(secondaryColors, 3)
     );
 
-    const depthMaterial = new THREE.PointsMaterial({
-      size: 0.01,
+    const secondaryMaterial = new THREE.PointsMaterial({
+      size: 0.04,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.3,
       vertexColors: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
-    const depthParticles = new THREE.Points(depthGeometry, depthMaterial);
-    scene.add(depthParticles);
+    const secondaryParticles = new THREE.Points(
+      secondaryGeometry,
+      secondaryMaterial
+    );
+    scene.add(secondaryParticles);
 
     // Animation
     let animationId: number;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      particles.rotation.y += 0.0005;
-      particles.rotation.x += 0.0002;
+      particles.rotation.y += 0.001;
+      particles.rotation.x += 0.0003;
 
-      depthParticles.rotation.y -= 0.0003;
-      depthParticles.rotation.x -= 0.0001;
+      secondaryParticles.rotation.y -= 0.0005;
+      secondaryParticles.rotation.x -= 0.0002;
+
+      // Mouse parallax
+      camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.02;
+      camera.position.y += (mouse.y * 0.3 - camera.position.y) * 0.02;
+      camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
     };
@@ -136,11 +172,12 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     return () => {
       cancelAnimationFrame(animationId);
       resizeObserver.disconnect();
+      window.removeEventListener("mousemove", handleMouseMove);
       renderer.dispose();
       particlesGeometry.dispose();
       particlesMaterial.dispose();
-      depthGeometry.dispose();
-      depthMaterial.dispose();
+      secondaryGeometry.dispose();
+      secondaryMaterial.dispose();
     };
   }, []);
 

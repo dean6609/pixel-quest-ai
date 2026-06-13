@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import ChatArea from "./ChatArea";
 import RightSidebar from "./RightSidebar";
 import { ChatProvider } from "../context/ChatContext";
 import ParticleCanvas from "./effects/ParticleCanvas";
+import GridWipe from "./effects/GridWipe";
 
 export default function ClientLayout() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [gridDebug, setGridDebug] = useState(false);
+  const [gridWipeActive, setGridWipeActive] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -56,7 +59,17 @@ export default function ClientLayout() {
               boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
               color: "var(--color-foreground)",
             }}
-            onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+            onClick={() => {
+              if (!rightSidebarOpen) {
+                setGridWipeActive(true);
+                setTimeout(() => {
+                  setRightSidebarOpen(true);
+                  setGridWipeActive(false);
+                }, 800);
+              } else {
+                setRightSidebarOpen(false);
+              }
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
               e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
@@ -87,10 +100,17 @@ export default function ClientLayout() {
         </main>
 
         {/* Right Sidebar */}
-        <RightSidebar
-          isOpen={rightSidebarOpen}
-          onClose={() => setRightSidebarOpen(false)}
-        />
+        <AnimatePresence mode="sync">
+          {rightSidebarOpen && (
+            <RightSidebar
+              isOpen={rightSidebarOpen}
+              onClose={() => setRightSidebarOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Grid Wipe Transition Overlay */}
+        <GridWipe isOpen={gridWipeActive} />
       </div>
     </ChatProvider>
   );

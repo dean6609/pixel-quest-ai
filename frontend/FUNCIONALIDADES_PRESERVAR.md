@@ -48,6 +48,32 @@
 - Marked 13.0.1 (markdown parsing)
 - TypeScript 5
 
+## Sistema de Animaciones (Nuevo)
+
+### GSAP + ScrollTrigger
+- ScrollTrigger one-shot animations via `useScrollAnimation` hook
+- Staggered child animations via `useStaggerScrollAnimation` hook
+- ScrambleGroup context for coordinated text scramble
+
+### Text Scramble Dual-Layer
+- Two-phase scramble: brand color → foreground resolve
+- `useDualLayerScramble` hook with IntersectionObserver trigger
+- ScrambleGroup for coordinated multi-element scramble
+
+### Framer Motion
+- AnimatePresence for sidebar open/close
+- GridWipe: 12-column page transition overlay
+- Staggered list animations in sidebar tabs
+
+### Particles (Three.js)
+- 3000 primary + 500 secondary particles per canvas
+- Cylindrical distribution with mouse parallax
+- Low-end device detection (reduced count for <4 cores)
+
+### Easing Curves
+- 14+ custom cubic-bezier curves
+- Named aliases: power2-out, power3-out, power3-in-out, power4-in-out
+
 ## Funcionalidades Clave a Preservar
 1. ✅ Chat con persistencia LocalStorage
 2. ✅ Múltiples sesiones de chat
