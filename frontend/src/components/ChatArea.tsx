@@ -6,6 +6,7 @@ import { useChat } from "../context/ChatContext";
 import ScrollContainer from "./ScrollContainer";
 import MessageInk from "./MessageInk";
 import QuillInput from "./QuillInput";
+import OracleLayout from "./OracleLayout";
 
 export default function ChatArea() {
   const { activeChatId, activeChat, createNewChat, addMessage } = useChat();
@@ -51,41 +52,33 @@ export default function ChatArea() {
   };
 
   return (
-    <>
+    <OracleLayout isLoading={isLoading}>
       <ScrollContainer>
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center py-16">
+          <div className="h-full flex flex-col items-center justify-center text-center py-12">
             <motion.h1
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.8 }}
-              className="text-3xl md:text-4xl font-bold mb-4 ink-text"
+              className="text-2xl md:text-4xl font-bold mb-3 ink-text"
               style={{ fontFamily: "var(--font-cinzel)" }}
             >
               El Oráculo te escucha
             </motion.h1>
             <p
-              className="text-lg max-w-md"
+              className="text-base md:text-lg max-w-md"
               style={{ color: "var(--color-ink-muted)", fontFamily: "var(--font-garamond)" }}
             >
               Pregunta sobre builds, items, enemigos o lugares de tu aventura.
             </p>
           </div>
         ) : (
-          <div className="pt-4 pb-8">
+          <div className="pt-2 pb-6">
             {messages.map((msg, idx) => (
-              <MessageInk
-                key={idx}
-                role={msg.role}
-                content={msg.content}
-                index={idx}
-              />
+              <MessageInk key={idx} role={msg.role} content={msg.content} index={idx} />
             ))}
             {isLoading && (
-              <div
-                className="flex items-center gap-2 my-4"
-                style={{ color: "var(--color-ink-muted)" }}
-              >
+              <div className="flex items-center gap-2 my-4" style={{ color: "var(--color-ink-muted)" }}>
                 <span
                   className={`inline-block w-2 h-2 rounded-full ${shouldReduceMotion ? "" : "animate-bounce"}`}
                   style={{ background: "var(--color-gold)" }}
@@ -98,10 +91,7 @@ export default function ChatArea() {
                   className={`inline-block w-2 h-2 rounded-full ${shouldReduceMotion ? "" : "animate-bounce"}`}
                   style={{ background: "var(--color-gold)", animationDelay: "0.3s" }}
                 />
-                <span
-                  className="text-sm italic"
-                  style={{ fontFamily: "var(--font-garamond)" }}
-                >
+                <span className="text-sm italic" style={{ fontFamily: "var(--font-garamond)" }}>
                   El Oráculo escribe...
                 </span>
               </div>
@@ -123,6 +113,6 @@ export default function ChatArea() {
         )}
       </ScrollContainer>
       <QuillInput onSend={handleSend} disabled={isLoading} />
-    </>
+    </OracleLayout>
   );
 }
