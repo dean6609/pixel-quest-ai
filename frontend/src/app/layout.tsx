@@ -1,42 +1,34 @@
 import type { Metadata } from "next";
-import { Inter, DM_Mono } from "next/font/google";
+import { Cinzel, EB_Garamond } from "next/font/google";
 import "./globals.css";
-import GSAPProvider from "../components/effects/GSAPProvider";
-import { SmoothScroll } from "../components/SmoothScroll";
 
-const inter = Inter({
+const cinzel = Cinzel({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-cinzel",
+  weight: ["400", "700"],
   display: "swap",
 });
 
-const dmMono = DM_Mono({
-  weight: ["300", "400", "500"],
+const ebGaramond = EB_Garamond({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-eb-garamond",
+  weight: ["400", "500", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Pixel Quest AI - Ethereal Oracle",
-  description: "Asistente de IA para el MMORPG Pixel Quest",
+  description: "Ask the Oracle about Pixel Quest",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html
-      lang="es"
-      className="dark"
-      data-theme="dark"
-      style={{ colorScheme: "dark" }}
-    >
-      <body className={`${inter.variable} ${dmMono.variable}`}>
-        <GSAPProvider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </GSAPProvider>
-      </body>
+    <html lang="es" className={`${cinzel.variable} ${ebGaramond.variable}`}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
