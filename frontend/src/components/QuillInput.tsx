@@ -23,13 +23,12 @@ export default function QuillInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed bottom-0 left-0 right-0 z-30 px-4 pb-6 pt-10"
+      className="fixed bottom-0 left-0 right-0 z-30 px-4 pb-6 pt-12"
       style={{
-        background:
-          "linear-gradient(to top, var(--color-wood) 40%, transparent)",
+        background: "linear-gradient(to top, rgba(15, 11, 8, 0.95) 30%, transparent)",
       }}
     >
-      <div className="max-w-[900px] mx-auto quill-input flex items-center gap-3 px-4 py-3">
+      <div className="max-w-[760px] mx-auto quill-input flex items-center gap-3 px-4 py-3">
         <svg
           width="22"
           height="22"

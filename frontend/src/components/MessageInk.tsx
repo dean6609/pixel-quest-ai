@@ -49,7 +49,7 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
       className={`flex ${isUser ? "justify-start" : "justify-end"} mb-6`}
     >
       <div
-        className={`relative max-w-[85%] md:max-w-[75%] p-4 rounded-sm ${
+        className={`relative max-w-[90%] md:max-w-[85%] p-4 rounded-sm ${
           isUser ? "rounded-br-2xl" : "rounded-bl-2xl"
         }`}
         style={{
@@ -71,7 +71,7 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
               ? { duration: 0 }
               : { duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }
           }
-          className="text-base leading-relaxed ink-text max-w-none"
+          className="text-base leading-relaxed ink-text max-w-none break-words"
           style={{ fontFamily: "var(--font-garamond)" }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
