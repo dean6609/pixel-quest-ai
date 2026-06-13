@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 interface GridWipeProps {
   isOpen: boolean;
@@ -12,6 +12,8 @@ const BASE_DURATION = 1.5; // 1500ms
 const STAGGER_DELAY = 0.03; // 30ms per column
 
 export default function GridWipe({ isOpen, onComplete }: GridWipeProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <AnimatePresence mode="sync">
       {isOpen && (
@@ -27,8 +29,8 @@ export default function GridWipe({ isOpen, onComplete }: GridWipeProps) {
               animate={{ scaleY: 1 }}
               exit={{ scaleY: 0 }}
               transition={{
-                duration: BASE_DURATION,
-                delay: i * STAGGER_DELAY,
+                duration: shouldReduceMotion ? 0 : BASE_DURATION,
+                delay: shouldReduceMotion ? 0 : i * STAGGER_DELAY,
                 ease: [0.65, 0, 0.35, 1], // --ease-in-out-cubic
               }}
               onAnimationComplete={() => {

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useRef, useCallback, useEffect } from
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+gsap.registerPlugin(ScrollTrigger);
+
 interface ScrambleGroupContextType {
   register: (id: string, trigger: () => void) => void;
   unregister: (id: string) => void;
@@ -36,6 +38,7 @@ export default function ScrambleGroup({
 }: ScrambleGroupProps) {
   const groupRef = useRef<HTMLDivElement>(null);
   const entriesRef = useRef<Map<string, () => void>>(new Map());
+  const timeoutIdsRef = useRef<number[]>([]);
 
   const register = useCallback((id: string, trigger: () => void) => {
     entriesRef.current.set(id, trigger);
@@ -46,16 +49,24 @@ export default function ScrambleGroup({
   }, []);
 
   const fireAll = useCallback(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
+
     const entries = Array.from(entriesRef.current.values());
     entries.forEach((trigger, i) => {
-      setTimeout(() => trigger(), i * stagger * 1000);
+      const id = window.setTimeout(() => trigger(), i * stagger * 1000);
+      timeoutIdsRef.current.push(id);
     });
   }, [stagger]);
 
   useEffect(() => {
     if (!autoTrigger || !groupRef.current) return;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (prefersReducedMotion) return;
 
     const scrollTrigger = ScrollTrigger.create({
@@ -67,6 +78,8 @@ export default function ScrambleGroup({
 
     return () => {
       scrollTrigger.kill();
+      timeoutIdsRef.current.forEach((id) => clearTimeout(id));
+      timeoutIdsRef.current = [];
     };
   }, [autoTrigger, triggerStart, fireAll]);
 

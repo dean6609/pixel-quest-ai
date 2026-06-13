@@ -6,7 +6,6 @@ import { DualLayerScramble } from "../components/effects/TextScramble";
 interface UseDualLayerScrambleOptions {
   duration?: number;
   speed?: number;
-  chars?: string;
   stagger?: number;
   revealDelay?: number;
   triggerOnMount?: boolean;

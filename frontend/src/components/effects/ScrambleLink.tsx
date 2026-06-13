@@ -23,6 +23,10 @@ export default function ScrambleLink({
   }, []);
 
   const handleMouseEnter = () => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReducedMotion) return;
     scrambleRef.current?.setText(children);
   };
 

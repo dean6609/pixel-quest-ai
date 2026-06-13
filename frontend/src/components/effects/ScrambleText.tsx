@@ -3,9 +3,11 @@
 import React from "react";
 import { useDualLayerScramble } from "../../hooks/useDualLayerScramble";
 
+type TextElement = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "div" | "li";
+
 interface ScrambleTextProps {
   text: string;
-  as?: keyof React.JSX.IntrinsicElements;
+  as?: TextElement;
   className?: string;
   triggerOnView?: boolean;
   triggerOnMount?: boolean;

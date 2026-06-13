@@ -37,6 +37,25 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 const STORAGE_CHATS = "pq_ai_chats";
 const STORAGE_ACTIVE = "pq_ai_active_chat_id";
 
+function generateId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function isValidChatSession(value: unknown): value is ChatSession {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Partial<ChatSession>;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.title === "string" &&
+    Array.isArray(candidate.messages) &&
+    typeof candidate.createdAt === "number" &&
+    typeof candidate.updatedAt === "number"
+  );
+}
+
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -47,7 +66,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const storedChats = localStorage.getItem(STORAGE_CHATS);
       const storedActiveId = localStorage.getItem(STORAGE_ACTIVE);
       if (storedChats) {
-        setChats(JSON.parse(storedChats));
+        const parsed = JSON.parse(storedChats);
+        if (Array.isArray(parsed) && parsed.every(isValidChatSession)) {
+          setChats(parsed);
+        } else {
+          console.warn("Invalid chat storage format; clearing");
+          localStorage.removeItem(STORAGE_CHATS);
+        }
       }
       if (storedActiveId) {
         setActiveChatId(storedActiveId);
@@ -76,7 +101,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const createNewChat = () => {
     const newChat: ChatSession = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       title: "Nueva Conversación",
       messages: [],
       createdAt: Date.now(),

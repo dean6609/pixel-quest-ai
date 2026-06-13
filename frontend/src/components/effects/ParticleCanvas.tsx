@@ -13,6 +13,14 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     const canvas = canvasRef.current;
     const container = containerRef.current;
 
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion) {
+      return;
+    }
+
     // Performance check for low-end devices
     const isLowEnd =
       typeof navigator !== "undefined" &&
@@ -40,15 +48,6 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
     });
     renderer.setSize(960, 945);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (prefersReducedMotion) {
-      renderer.dispose();
-      return;
-    }
 
     // Main particle system - cylindrical distribution
     const particlesGeometry = new THREE.BufferGeometry();
@@ -207,6 +206,7 @@ export default function ParticleCanvas({ side }: { side: "left" | "right" }) {
         data-engine="three.js r182"
         width={960}
         height={945}
+        aria-hidden="true"
         style={{ width: "100%", height: "100%" }}
       />
     </div>
