@@ -14,9 +14,6 @@
   --color-wax: #8b2222;
   --color-wax-light: #a82e2e;
   --color-wax-shadow: #5a1515;
-
-  --font-cinzel: "Cinzel", serif;
-  --font-garamond: "EB Garamond", serif;
 }
 
 @layer base {

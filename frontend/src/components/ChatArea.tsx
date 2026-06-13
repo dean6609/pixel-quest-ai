@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useChat } from "../context/ChatContext";
 import ScrollContainer from "./ScrollContainer";
 import MessageInk from "./MessageInk";
@@ -13,10 +13,11 @@ export default function ChatArea() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isLoading]);
+    bottomRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? "auto" : "smooth" });
+  }, [messages.length, isLoading, shouldReduceMotion]);
 
   const handleSend = async (text: string) => {
     let chatId = activeChatId;
@@ -55,9 +56,9 @@ export default function ChatArea() {
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center py-16">
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.8 }}
               className="text-3xl md:text-4xl font-bold mb-4 ink-text"
               style={{ fontFamily: "var(--font-cinzel)" }}
             >
@@ -86,15 +87,15 @@ export default function ChatArea() {
                 style={{ color: "var(--color-ink-muted)" }}
               >
                 <span
-                  className="inline-block w-2 h-2 rounded-full animate-bounce"
+                  className={`inline-block w-2 h-2 rounded-full ${shouldReduceMotion ? "" : "animate-bounce"}`}
                   style={{ background: "var(--color-gold)" }}
                 />
                 <span
-                  className="inline-block w-2 h-2 rounded-full animate-bounce"
+                  className={`inline-block w-2 h-2 rounded-full ${shouldReduceMotion ? "" : "animate-bounce"}`}
                   style={{ background: "var(--color-gold)", animationDelay: "0.15s" }}
                 />
                 <span
-                  className="inline-block w-2 h-2 rounded-full animate-bounce"
+                  className={`inline-block w-2 h-2 rounded-full ${shouldReduceMotion ? "" : "animate-bounce"}`}
                   style={{ background: "var(--color-gold)", animationDelay: "0.3s" }}
                 />
                 <span

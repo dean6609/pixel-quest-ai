@@ -11,7 +11,7 @@ const cinzel = Cinzel({
 
 const ebGaramond = EB_Garamond({
   subsets: ["latin"],
-  variable: "--font-eb-garamond",
+  variable: "--font-garamond",
   weight: ["400", "500", "700"],
   display: "swap",
 });

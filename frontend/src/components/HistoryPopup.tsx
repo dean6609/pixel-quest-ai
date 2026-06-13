@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useChat } from "../context/ChatContext";
 
 export default function HistoryPopup({
@@ -12,6 +12,7 @@ export default function HistoryPopup({
   onClose: () => void;
 }) {
   const { chats, activeChatId, setActiveChatId, createNewChat, clearAllChats } = useChat();
+  const shouldReduceMotion = useReducedMotion();
 
   const formatDate = (ts: number) =>
     new Intl.DateTimeFormat("es-ES", {
@@ -29,10 +30,10 @@ export default function HistoryPopup({
             aria-hidden="true"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: -20 }}
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.85, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -10 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 22 }}
             className="fixed top-24 right-6 z-40 w-80 parchment parchment-edge rounded-lg p-4"
           >
             <h3
