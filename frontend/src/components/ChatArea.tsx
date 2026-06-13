@@ -13,7 +13,7 @@ export default function ChatArea() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? true;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? "auto" : "smooth" });

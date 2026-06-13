@@ -1,24 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useChat } from "../context/ChatContext";
 
 export default function HistoryPopup({
   open,
   onClose,
+  triggerRef,
 }: {
   open: boolean;
   onClose: () => void;
+  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   const { chats, activeChatId, setActiveChatId, createNewChat, clearAllChats } = useChat();
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? true;
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const formatDate = (ts: number) =>
     new Intl.DateTimeFormat("es-ES", {
       dateStyle: "short",
       timeStyle: "short",
     }).format(new Date(ts));
+
+  useEffect(() => {
+    if (!open) {
+      triggerRef?.current?.focus();
+      return;
+    }
+    const timer = setTimeout(() => panelRef.current?.focus(), 50);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose, triggerRef]);
 
   return (
     <AnimatePresence>
@@ -30,11 +49,13 @@ export default function HistoryPopup({
             aria-hidden="true"
           />
           <motion.div
+            ref={panelRef}
+            tabIndex={-1}
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.85, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
             transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 22 }}
-            className="fixed top-24 right-6 z-40 w-80 parchment parchment-edge rounded-lg p-4"
+            className="fixed top-24 right-6 z-40 w-80 parchment parchment-edge rounded-lg p-4 outline-none"
           >
             <h3
               className="text-lg font-bold mb-3 ink-text"

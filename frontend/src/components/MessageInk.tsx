@@ -3,11 +3,15 @@
 import React, { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { marked } from "marked";
+import DOMPurify from "isomorphic-dompurify";
 
 function parseMarkdown(content: string): string {
   const result = marked.parse(content);
-  const html = typeof result === "string" ? result : "";
-  return html.replace(
+  const rawHtml = typeof result === "string" ? result : "";
+  const cleanHtml = DOMPurify.sanitize(rawHtml, {
+    USE_PROFILES: { html: true },
+  });
+  return cleanHtml.replace(
     /<a href="(https?:\/\/[^"]+)"/g,
     '<a href="$1" target="_blank" rel="noopener noreferrer"'
   );
@@ -35,7 +39,7 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
   );
 
   const isUser = role === "user";
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? true;
 
   return (
     <motion.div
@@ -55,7 +59,18 @@ export default function MessageInk({ role, content, index }: MessageInkProps) {
           border: `1px solid ${isUser ? "rgba(42,29,18,0.12)" : "rgba(191,160,70,0.25)"}`,
         }}
       >
-        <div
+        <motion.div
+          initial={
+            shouldReduceMotion
+              ? { opacity: 1 }
+              : { opacity: 0.8, clipPath: "inset(0 100% 0 0)" }
+          }
+          animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }
+          }
           className="text-base leading-relaxed ink-text max-w-none"
           style={{ fontFamily: "var(--font-garamond)" }}
           dangerouslySetInnerHTML={{ __html: html }}

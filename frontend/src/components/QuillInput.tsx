@@ -56,6 +56,7 @@ export default function QuillInput({
             }
           }}
           placeholder="Escribe tu pregunta al Oráculo..."
+          aria-label="Escribe tu pregunta al Oráculo"
           rows={1}
           disabled={disabled}
           className="flex-1 bg-transparent outline-none resize-none text-base ink-text placeholder:text-[var(--color-ink-muted)]"
@@ -69,11 +70,7 @@ export default function QuillInput({
         <button
           type="submit"
           disabled={!value.trim() || disabled}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-40"
-          style={{
-            background: "var(--color-gold)",
-            color: "var(--color-wood)",
-          }}
+          className="wax-seal-button w-10 h-10 flex items-center justify-center"
           aria-label="Enviar mensaje"
         >
           <Send size={18} />

@@ -8,7 +8,7 @@ export default function ScrollContainer({
 }: {
   children: React.ReactNode;
 }) {
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? true;
 
   return (
     <motion.div

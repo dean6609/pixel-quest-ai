@@ -8,7 +8,7 @@
   --color-parchment-dark: #d4c5a9;
   --color-parchment-edge: #c4b49a;
   --color-ink: #2a1d12;
-  --color-ink-muted: #5c4a3a;
+  --color-ink-muted: #3e3025;
   --color-gold: #bfa046;
   --color-gold-light: #d4b76a;
   --color-wax: #8b2222;
@@ -107,7 +107,32 @@
     animation: sealPulse 3s ease-in-out infinite;
   }
 
-  .quill-input {
+  .wax-seal-button {
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--color-wax-light), var(--color-wax) 55%, var(--color-wax-shadow) 100%);
+    box-shadow:
+      inset -3px -3px 6px rgba(0,0,0,0.35),
+      inset 3px 3px 6px rgba(255,255,255,0.12),
+      0 4px 10px rgba(0,0,0,0.5);
+    color: rgba(255,255,255,0.92);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .wax-seal-button:not(:disabled):hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+      inset -3px -3px 6px rgba(0,0,0,0.35),
+      inset 3px 3px 6px rgba(255,255,255,0.18),
+      0 6px 14px rgba(0,0,0,0.55);
+  }
+
+  .wax-seal-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.4);
+  }
+
+.quill-input {
     background: linear-gradient(180deg, var(--color-parchment) 0%, var(--color-parchment-dark) 100%);
     border: 1px solid var(--color-parchment-edge);
     border-radius: 9999px;
@@ -121,8 +146,80 @@
     text-shadow: 0 0 1px rgba(42, 29, 18, 0.15);
   }
 
-  .gold-accent {
-    color: var(--color-gold);
+  .ink-text :where(h1, h2, h3, h4) {
+    font-family: var(--font-cinzel);
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+    color: var(--color-ink);
+  }
+
+  .ink-text :where(p) {
+    margin: 0 0 0.75rem;
+  }
+
+  .ink-text :where(ul, ol) {
+    margin: 0 0 0.75rem 1.25rem;
+    padding-left: 0.5rem;
+  }
+
+  .ink-text :where(li) {
+    margin: 0.25rem 0;
+  }
+
+  .ink-text :where(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background: rgba(42, 29, 18, 0.08);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+  }
+
+  .ink-text :where(pre) {
+    background: rgba(42, 29, 18, 0.1);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0 0 0.75rem;
+  }
+
+  .ink-text :where(pre code) {
+    background: transparent;
+    padding: 0;
+  }
+
+  .ink-text :where(blockquote) {
+    border-left: 3px solid var(--color-gold);
+    padding-left: 1rem;
+    margin: 0 0 0.75rem;
+    font-style: italic;
+    color: var(--color-ink-muted);
+  }
+
+  .ink-text :where(a) {
+    color: var(--color-wax);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .ink-text :where(a):hover {
+    color: var(--color-wax-light);
+  }
+
+  .ink-text :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 0.75rem;
+  }
+
+  .ink-text :where(th, td) {
+    border: 1px solid var(--color-parchment-edge);
+    padding: 0.5rem;
+    text-align: left;
+  }
+
+  .ink-text :where(th) {
+    font-family: var(--font-cinzel);
+    background: rgba(42, 29, 18, 0.06);
   }
 }
 
