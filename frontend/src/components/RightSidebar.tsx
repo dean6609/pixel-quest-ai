@@ -2,6 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import {
+  Search,
+  Activity,
+  MessageSquare,
+  X,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useChat } from "../context/ChatContext";
 
 type RightSidebarProps = {
@@ -32,12 +41,9 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
 
       {/* Sidebar */}
       <motion.div
-        className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 flex flex-col"
+        className="fixed top-0 right-0 h-full w-full sm:w-80 lg:w-96 shrink-0 z-50 flex flex-col glass-panel border-l"
         style={{
-          background: "rgba(26, 26, 26, 0.95)",
-          backdropFilter: "blur(2rem)",
-          WebkitBackdropFilter: "blur(2rem)",
-          borderLeft: "1px solid var(--color-border)",
+          borderColor: "var(--color-border)",
         }}
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
@@ -63,26 +69,10 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
           </h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-full transition-colors duration-150"
+            className="p-2 rounded-full transition-colors duration-150 hover:bg-white/5"
             style={{ color: "var(--color-foreground-muted)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "var(--color-foreground)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--color-foreground-muted)";
-            }}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X size={20} />
           </button>
         </div>
 
@@ -95,7 +85,7 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all duration-150 text-sm font-medium"
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all duration-150 text-sm font-medium hover:bg-white/5"
               style={{
                 background:
                   activeTab === tab
@@ -107,43 +97,9 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
                     : "var(--color-foreground-muted)",
               }}
             >
-              {tab === "search" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              )}
-              {tab === "history" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              )}
-              {tab === "changes" && (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-              )}
+              {tab === "search" && <Search size={16} />}
+              {tab === "history" && <MessageSquare size={16} />}
+              {tab === "changes" && <Activity size={16} />}
               <span className="hidden sm:inline capitalize">{tab}</span>
             </button>
           ))}
@@ -206,27 +162,12 @@ function SearchTab() {
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <div
-          className="flex items-center gap-2 rounded-2xl transition-all duration-250"
-          style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            padding: "6px",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="ml-2"
+        <div className="doppelrand-shell flex items-center gap-2 transition-all duration-250">
+          <Search
+            size={16}
+            className="ml-2 shrink-0"
             style={{ color: "var(--color-foreground-muted)" }}
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          />
           <input
             type="text"
             placeholder="Search items..."
@@ -246,7 +187,10 @@ function SearchTab() {
             color: "var(--color-foreground)",
           }}
         >
-          <option value="" style={{ background: "var(--color-background-muted)" }}>
+          <option
+            value=""
+            style={{ background: "var(--color-background-muted)" }}
+          >
             All Tiers
           </option>
           {tiers.map((t) => (
@@ -263,18 +207,11 @@ function SearchTab() {
 
       {loading ? (
         <div className="flex justify-center p-8">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+          <Loader2
+            size={24}
             className="animate-spin"
             style={{ color: "var(--color-brand)" }}
-          >
-            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-          </svg>
+          />
         </div>
       ) : (
         <div className="space-y-2 mt-4">
@@ -291,56 +228,36 @@ function SearchTab() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
             >
-            <div
-              className="cursor-pointer group transition-all duration-150"
-              style={{
-                background: "rgba(255, 255, 255, 0.02)",
-                padding: "6px",
-                borderRadius: "2rem",
-                border: "1px solid var(--color-border)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-border)";
-              }}
-            >
-              <div
-                style={{
-                  background: "var(--color-background-muted)",
-                  borderRadius: "calc(2rem - 6px)",
-                  padding: "1rem",
-                }}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <h4
-                    className="font-bold text-base transition-colors duration-150"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    {item.name}
-                  </h4>
-                  {item.tier && (
-                    <span
-                      className="text-xs px-2 py-1 rounded-full"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.05)",
-                        border: "1px solid var(--color-border)",
-                        color: "var(--color-foreground-muted)",
-                      }}
+              <div className="doppelrand-shell cursor-pointer group transition-all duration-150 hover:border-white/20">
+                <div className="doppelrand-core p-4">
+                  <div className="flex justify-between items-start mb-1">
+                    <h4
+                      className="font-bold text-base transition-colors duration-150"
+                      style={{ color: "var(--color-foreground)" }}
                     >
-                      {item.tier}
-                    </span>
-                  )}
-                </div>
-                <div
-                  className="text-xs truncate"
-                  style={{ color: "var(--color-foreground-muted)" }}
-                >
-                  {item.item_type || "Unknown"}
+                      {item.name}
+                    </h4>
+                    {item.tier && (
+                      <span
+                        className="text-xs px-2 py-1 rounded-full"
+                        style={{
+                          background: "rgba(255, 255, 255, 0.05)",
+                          border: "1px solid var(--color-border)",
+                          color: "var(--color-foreground-muted)",
+                        }}
+                      >
+                        {item.tier}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    className="text-xs truncate"
+                    style={{ color: "var(--color-foreground-muted)" }}
+                  >
+                    {item.item_type || "Unknown"}
+                  </div>
                 </div>
               </div>
-            </div>
             </motion.div>
           ))}
         </div>
@@ -370,24 +287,20 @@ function ChangesTab() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm" style={{ color: "var(--color-foreground-muted)" }}>
+      <p
+        className="text-sm"
+        style={{ color: "var(--color-foreground-muted)" }}
+      >
         Latest updates detected from the official Realm Wiki.
       </p>
 
       {loading ? (
         <div className="flex justify-center p-8">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+          <Loader2
+            size={24}
             className="animate-spin"
             style={{ color: "var(--color-brand)" }}
-          >
-            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-          </svg>
+          />
         </div>
       ) : changes.length === 0 ? (
         <div
@@ -405,63 +318,42 @@ function ChangesTab() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
             >
-            <div
-              className="flex gap-4 cursor-pointer group transition-all duration-150"
-              style={{
-                background: "rgba(255, 255, 255, 0.02)",
-                padding: "6px",
-                borderRadius: "2rem",
-                border: "1px solid var(--color-border)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-border)";
-              }}
-            >
-              <div
-                style={{
-                  background: "var(--color-background-muted)",
-                  borderRadius: "calc(2rem - 6px)",
-                  padding: "1rem",
-                }}
-                className="flex gap-4 w-full"
-              >
-                <div className="mt-1">
-                  <div
-                    className="w-2 h-2 rounded-full transition-transform duration-150 group-hover:scale-125"
-                    style={{ background: "var(--color-foreground-muted)" }}
-                  />
-                </div>
-                <div className="w-full">
-                  <h4
-                    className="text-base leading-relaxed mb-1 transition-colors duration-150"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    {change.title}
-                  </h4>
-                  <div
-                    className="flex items-center gap-2 text-xs"
-                    style={{ color: "var(--color-foreground-muted)" }}
-                  >
-                    <span
-                      className="px-2 py-0.5 rounded text-xs uppercase tracking-wider"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.05)",
-                        border: "1px solid var(--color-border)",
-                      }}
+              <div className="doppelrand-shell cursor-pointer group transition-all duration-150 hover:border-white/20">
+                <div className="doppelrand-core flex gap-4 w-full p-4">
+                  <div className="mt-1">
+                    <div
+                      className="w-2 h-2 rounded-full transition-transform duration-150 group-hover:scale-125"
+                      style={{ background: "var(--color-foreground-muted)" }}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <h4
+                      className="text-base leading-relaxed mb-1 transition-colors duration-150"
+                      style={{ color: "var(--color-foreground)" }}
                     >
-                      {change.version || "Update"}
-                    </span>
-                    <span>•</span>
-                    <span>
-                      {new Date(change.timestamp).toLocaleDateString()}
-                    </span>
+                      {change.title}
+                    </h4>
+                    <div
+                      className="flex items-center gap-2 text-xs"
+                      style={{ color: "var(--color-foreground-muted)" }}
+                    >
+                      <span
+                        className="px-2 py-0.5 rounded text-xs uppercase tracking-wider"
+                        style={{
+                          background: "rgba(255, 255, 255, 0.05)",
+                          border: "1px solid var(--color-border)",
+                        }}
+                      >
+                        {change.version || "Update"}
+                      </span>
+                      <span>•</span>
+                      <span>
+                        {new Date(change.timestamp).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </motion.div>
           ))}
         </div>
@@ -480,46 +372,33 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
     clearAllChats,
   } = useChat();
 
+  const handleNewChat = () => {
+    createNewChat();
+    onClose();
+  };
+
+  const handleSelectChat = (id: string) => {
+    setActiveChatId(id);
+    onClose();
+  };
+
   return (
     <div className="flex flex-col h-full space-y-4">
       <button
-        onClick={() => {
-          createNewChat();
-        }}
-        className="group w-full flex justify-between items-center pl-5 pr-2 py-2 rounded-full transition-all duration-150"
-        style={{
-          background: "rgba(255, 255, 255, 0.04)",
-          border: "1px solid var(--color-border)",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-          e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--color-border)";
-          e.currentTarget.style.background = "rgba(255, 255, 255, 0.04)";
-        }}
+        onClick={handleNewChat}
+        className="group doppelrand-shell flex justify-between items-center pl-5 pr-2 py-2 transition-all duration-150 hover:border-white/20"
       >
-        <span className="font-bold text-sm" style={{ color: "var(--color-brand)" }}>
+        <span
+          className="font-bold text-sm"
+          style={{ color: "var(--color-brand)" }}
+        >
           New Oracle Session
         </span>
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 group-hover:rotate-90 group-hover:scale-105"
           style={{ background: "rgba(255, 255, 255, 0.05)" }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ color: "var(--color-brand)" }}
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <Plus size={16} style={{ color: "var(--color-brand)" }} />
         </div>
       </button>
 
@@ -539,81 +418,51 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
             >
-            <div
-              onClick={() => {
-                setActiveChatId(chat.id);
-              }}
-              className="group flex items-center justify-between p-3 cursor-pointer transition-all duration-150"
-              style={{
-                borderRadius: "1.5rem",
-                background: "rgba(255, 255, 255, 0.02)",
-                border: `1px solid ${
-                  chat.id === activeChatId
-                    ? "rgba(255, 255, 255, 0.3)"
-                    : "var(--color-border-muted)"
-                }`,
-              }}
-              onMouseEnter={(e) => {
-                if (chat.id !== activeChatId) {
-                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (chat.id !== activeChatId) {
-                  e.currentTarget.style.borderColor = "var(--color-border-muted)";
-                }
-              }}
-            >
-              <div className="flex-1 min-w-0 pr-2 pl-1">
-                <h4
-                  className="truncate transition-colors duration-150 text-sm"
-                  style={{
-                    color:
-                      chat.id === activeChatId
-                        ? "var(--color-foreground)"
-                        : "var(--color-foreground-muted)",
-                    fontWeight: chat.id === activeChatId ? 600 : 400,
-                  }}
-                >
-                  {chat.title}
-                </h4>
-                <div
-                  className="text-xs mt-1"
-                  style={{ color: "var(--color-foreground-muted)" }}
-                >
-                  {new Date(chat.updatedAt).toLocaleString()}
-                </div>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteChat(chat.id);
+              <div
+                onClick={() => handleSelectChat(chat.id)}
+                className="group flex items-center justify-between p-3 cursor-pointer transition-all duration-150 hover:border-white/20"
+                style={{
+                  borderRadius: "1.5rem",
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: `1px solid ${
+                    chat.id === activeChatId
+                      ? "rgba(255, 255, 255, 0.3)"
+                      : "var(--color-border-muted)"
+                  }`,
                 }}
-                className="p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-150"
-                style={{ color: "var(--color-foreground-muted)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#ef4444";
-                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--color-foreground-muted)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-                title="Forget memory"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+                <div className="flex-1 min-w-0 pr-2 pl-1">
+                  <h4
+                    className="truncate transition-colors duration-150 text-sm"
+                    style={{
+                      color:
+                        chat.id === activeChatId
+                          ? "var(--color-foreground)"
+                          : "var(--color-foreground-muted)",
+                      fontWeight: chat.id === activeChatId ? 600 : 400,
+                    }}
+                  >
+                    {chat.title}
+                  </h4>
+                  <div
+                    className="text-xs mt-1"
+                    style={{ color: "var(--color-foreground-muted)" }}
+                  >
+                    {new Date(chat.updatedAt).toLocaleString()}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteChat(chat.id);
+                  }}
+                  className="p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-150 hover:bg-red-500/10 hover:text-red-500"
+                  style={{ color: "var(--color-foreground-muted)" }}
+                  title="Forget memory"
                 >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
-            </div>
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </motion.div>
           ))
         )}
@@ -622,30 +471,14 @@ function HistoryTab({ onClose }: { onClose: () => void }) {
       {chats.length > 0 && (
         <button
           onClick={clearAllChats}
-          className="w-full mt-4 flex items-center justify-center gap-2 p-4 rounded-xl transition-all duration-150 text-sm"
+          className="w-full mt-4 flex items-center justify-center gap-2 p-4 rounded-xl transition-all duration-150 text-sm hover:bg-red-500/10"
           style={{
             background: "rgba(255, 255, 255, 0.02)",
             border: "1px solid rgba(239, 68, 68, 0.3)",
             color: "#ef4444",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
-          }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          </svg>
+          <Trash2 size={16} />
           Purge Memories
         </button>
       )}
