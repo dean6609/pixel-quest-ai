@@ -1,9 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export type Message = {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 };
 
@@ -28,16 +34,18 @@ type ChatContextType = {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
+const STORAGE_CHATS = "pq_ai_chats";
+const STORAGE_ACTIVE = "pq_ai_active_chat_id";
+
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from LocalStorage on mount
   useEffect(() => {
     try {
-      const storedChats = localStorage.getItem('pq_ai_chats');
-      const storedActiveId = localStorage.getItem('pq_ai_active_chat_id');
+      const storedChats = localStorage.getItem(STORAGE_CHATS);
+      const storedActiveId = localStorage.getItem(STORAGE_ACTIVE);
       if (storedChats) {
         setChats(JSON.parse(storedChats));
       }
@@ -50,64 +58,60 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsLoaded(true);
   }, []);
 
-  // Save to LocalStorage whenever chats or activeChatId changes
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      localStorage.setItem('pq_ai_chats', JSON.stringify(chats));
+      localStorage.setItem(STORAGE_CHATS, JSON.stringify(chats));
       if (activeChatId) {
-        localStorage.setItem('pq_ai_active_chat_id', activeChatId);
+        localStorage.setItem(STORAGE_ACTIVE, activeChatId);
       } else {
-        localStorage.removeItem('pq_ai_active_chat_id');
+        localStorage.removeItem(STORAGE_ACTIVE);
       }
     } catch (error) {
       console.error("Failed to save chats to localStorage", error);
     }
   }, [chats, activeChatId, isLoaded]);
 
-  const activeChat = chats.find(c => c.id === activeChatId);
+  const activeChat = chats.find((c) => c.id === activeChatId);
 
   const createNewChat = () => {
     const newChat: ChatSession = {
       id: crypto.randomUUID(),
-      title: 'Nueva Conversación',
+      title: "Nueva Conversación",
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    setChats(prev => [newChat, ...prev]);
+    setChats((prev) => [newChat, ...prev]);
     setActiveChatId(newChat.id);
     return newChat.id;
   };
 
   const addMessage = (chatId: string, message: Message) => {
-    setChats(prevChats => {
-      const chatIndex = prevChats.findIndex(c => c.id === chatId);
-      if (chatIndex === -1) return prevChats; // Should not happen
+    setChats((prevChats) => {
+      const chatIndex = prevChats.findIndex((c) => c.id === chatId);
+      if (chatIndex === -1) return prevChats;
 
       const updatedChats = [...prevChats];
       const chat = { ...updatedChats[chatIndex] };
-      
-      // Update title based on the first user message
-      if (chat.messages.length === 0 && message.role === 'user') {
-        // Truncate to first 30 chars for title
-        chat.title = message.content.length > 30 
-          ? message.content.substring(0, 30) + '...' 
-          : message.content;
+
+      if (chat.messages.length === 0 && message.role === "user") {
+        chat.title =
+          message.content.length > 30
+            ? message.content.substring(0, 30) + "..."
+            : message.content;
       }
 
       chat.messages = [...chat.messages, message];
       chat.updatedAt = Date.now();
-      
+
       updatedChats[chatIndex] = chat;
-      
-      // Sort by updatedAt descending
       return updatedChats.sort((a, b) => b.updatedAt - a.updatedAt);
     });
   };
 
   const deleteChat = (id: string) => {
-    setChats(prev => prev.filter(c => c.id !== id));
+    setChats((prev) => prev.filter((c) => c.id !== id));
     if (activeChatId === id) {
       setActiveChatId(null);
     }
@@ -139,7 +143,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 export function useChat() {
   const context = useContext(ChatContext);
   if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider');
+    throw new Error("useChat must be used within a ChatProvider");
   }
   return context;
 }
