@@ -21,7 +21,7 @@ export default function OracleLayout({
       <PixelParticles isLoading={isLoading} />
       <QuillInkwell />
 
-      <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center min-h-screen px-4 py-8 gap-6 lg:gap-12">
+      <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center min-h-screen px-4 pt-6 pb-36 gap-6 lg:gap-8">
         <div className="order-1 lg:order-1 shrink-0">
           <PixelOrb isLoading={isLoading} />
         </div>

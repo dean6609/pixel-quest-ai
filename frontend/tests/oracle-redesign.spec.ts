@@ -3,6 +3,11 @@ import { test, expect } from "@playwright/test";
 test.describe("Oracle redesign", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await page.evaluate(() => {
+      localStorage.removeItem("pq_ai_chats");
+      localStorage.removeItem("pq_ai_active_chat_id");
+    });
+    await page.reload();
   });
 
   test("book, orb and hourglass are visible", async ({ page }) => {
