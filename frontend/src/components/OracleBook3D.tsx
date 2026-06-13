@@ -27,13 +27,7 @@ export default function OracleBook3D({ children }: { children: React.ReactNode }
           style={{ transform: "rotateY(-8deg) translateZ(8px)" }}
         />
 
-        {/* Content area spans both pages */}
-        <div className="absolute inset-0 z-20 flex">
-          <div className="w-1/2 h-full p-6 md:p-10" />
-          <div className="w-1/2 h-full p-6 md:p-10" />
-        </div>
-
-        {/* Actual scrollable content */}
+        {/* Scrollable content area */}
         <div className="absolute inset-[3%] z-30 overflow-y-auto overflow-x-hidden">
           {children}
         </div>
