@@ -1,20 +1,16 @@
 # Pixel Quest AI — Python dependencies
 
 # ── Web server ──────────────────────────────────────────────────────────────
-fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
-pydantic>=2.0.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic>=2.10.0
 
-# ── AI / LLM ────────────────────────────────────────────────────────────────
-openai>=1.0.0          # DeepSeek is compatible with OpenAI SDK
-
-# ── Semantic search (optional — improves search quality) ───────────────────
-# Removed local semantic embeddings in favor of LLM function calling
-
+# ── AI / LLM (DeepSeek via OpenAI-compatible SDK) ──────────────────────────
+openai>=1.50.0
 
 # ── HTTP client (wiki scraping / sync) ─────────────────────────────────────
-requests>=2.31.0
+requests>=2.32.0
 beautifulsoup4>=4.12.0
 
 # ── Utilities ───────────────────────────────────────────────────────────────
-python-dotenv>=1.0.0   # Loads .env file automatically
+python-dotenv>=1.0.0

@@ -131,21 +131,36 @@ El sistema se configura a través del archivo `.env`:
 
 ```text
 pixel-quest-ai/
-├── 📄 main.py              # Punto de entrada para la CLI
-├── 📄 web_app.py           # Servidor FastAPI (monta API y frontend)
-├── 📁 pq_ai/               # Core del Backend en Python
+├── main.py                 # Punto de entrada para la CLI
+├── web_app.py              # Servidor FastAPI (monta API y frontend)
+├── requirements.txt        # Dependencias del proyecto
+├── .env.example            # Plantilla de configuración
+│
+├── pq_ai/                  # Core del Backend en Python
 │   ├── config.py           # Gestión de configuración
+│   ├── models.py           # Dataclasses (Item, Enemy, Location)
 │   ├── database.py         # Manejo de base de datos JSON
-│   ├── search.py           # Motor de búsqueda
-│   ├── deepseek_rag.py     # Integración de IA y Function Calling
-│   ├── rag.py              # Orquestador del flujo
+│   ├── parser.py           # Parser de wikitext de MediaWiki
 │   ├── extractor.py        # Scraping del wiki
-│   ├── updater.py          # Lógica de sincronización
+│   ├── updater.py          # Lógica de sincronización incremental
+│   ├── search.py           # Motor de búsqueda con sinónimos
+│   ├── rag.py              # Orquestador del flujo RAG
+│   ├── deepseek_rag.py     # Integración de IA y Function Calling
 │   └── cli.py              # Comandos de terminal
-├── 📁 frontend/            # Código fuente Next.js + React
-├── 📁 data/                # Archivos JSON sincronizados
-├── 📄 .env.example         # Plantilla de configuración
-└── 📄 requirements.txt     # Dependencias del proyecto
+│
+├── frontend/               # Código fuente Next.js + React
+│   ├── src/
+│   │   ├── app/            # Layout, página principal, fonts
+│   │   ├── components/     # 15 componentes React
+│   │   ├── context/        # ChatContext (estado global del chat)
+│   │   └── lib/            # Utilidades y animaciones
+│   └── tests/              # Tests E2E con Playwright
+│
+└── data/                   # Archivos JSON sincronizados del wiki
+    ├── items.json
+    ├── enemies.json
+    ├── locations.json
+    └── relationships.json
 ```
 
 ---
