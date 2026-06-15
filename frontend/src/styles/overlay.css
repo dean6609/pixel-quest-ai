@@ -3,6 +3,12 @@
    Sits crisply above the 3D <Canvas>, centred over the open book.
    =========================================================================== */
 
+/* Low-res WebGL buffer upscaled with hard pixels → the pixel-art grain.
+   The DOM pages/popup render above this, crisp and unpixelated. */
+.scene-canvas {
+  image-rendering: pixelated;
+}
+
 :root {
   --ink:        #2a1d12;
   --ink-soft:   #5b4632;
@@ -18,56 +24,47 @@
   --serif-body:    "EB Garamond", Georgia, "Times New Roman", serif;
 }
 
-/* The overlay layer floats above the canvas but lets the room breathe at edges. */
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  pointer-events: none;          /* canvas stays interactive; children opt back in */
-  padding: clamp(1.5rem, 4vh, 3rem) 1rem;
+/* ---- accessible twins for the 3D controls ---- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-.overlay > * { pointer-events: auto; }
-
-/* The book-page surface holding the conversation. */
-.codex {
+/* ---- a hint button while the closed book floats ---- */
+.open-book-hint {
+  position: fixed;
+  left: 50%; bottom: 12%;
+  transform: translateX(-50%);
+  z-index: 15;
+  all: unset;
   pointer-events: auto;
-  width: min(680px, 92vw);
-  max-height: 64vh;
-  margin: 0 auto;
-  align-self: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: clamp(1.25rem, 3vw, 2.25rem);
+  cursor: pointer;
+  font-family: var(--serif-display);
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: var(--parchment);
+  opacity: 0.78;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
+  animation: candle-pulse 3.2s ease-in-out infinite;
+}
+.open-book-hint:hover { opacity: 1; }
+
+/* ---- a single open page rendered inside a drei <Html> plane ---- */
+.page {
+  width: 320px;
   color: var(--ink);
   font-family: var(--serif-body);
-  font-size: 1.075rem;
-  line-height: 1.62;
-  background:
-    radial-gradient(120% 80% at 50% -10%, rgba(255, 207, 122, 0.10), transparent 60%),
-    linear-gradient(180deg, rgba(239, 226, 194, 0.93), rgba(227, 210, 168, 0.90));
-  border: 1px solid rgba(120, 92, 54, 0.45);
-  border-radius: 6px;
-  box-shadow:
-    0 1px 0 rgba(255, 246, 220, 0.6) inset,
-    0 30px 60px -28px rgba(0, 0, 0, 0.7),
-    0 0 90px -30px rgba(224, 153, 63, 0.55);
-  position: relative;
-  overflow: hidden;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  /* The parchment itself is the 3D mesh; keep the DOM transparent so only
+     ink shows on the page. */
+  background: transparent;
+  user-select: text;
 }
-
-/* faint vertical gutter, like a bound spine */
-.codex::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 49.4%, rgba(90, 64, 38, 0.14) 50%, transparent 50.6%);
-  pointer-events: none;
-  opacity: 0.4;
-}
+.page--left { /* model: conversation + reasoning */ }
+.page--right { display: flex; flex-direction: column; justify-content: flex-end; }
+.page .chat-panel { max-height: 18rem; }
 
 /* ---- conversation scroll area ---- */
 .chat-panel {
@@ -187,15 +184,6 @@
   animation: candle-pulse 0.8s steps(2) infinite;
 }
 
-/* ---- input bar (lives in the bottom row of .overlay) ---- */
-.composer {
-  pointer-events: auto;
-  width: min(680px, 92vw);
-  margin: 0.75rem auto 0;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
 .ink-input {
   flex: 1;
   display: flex;
@@ -234,25 +222,6 @@
 }
 .ink-input__quill:hover { transform: rotate(-8deg) scale(1.06); filter: brightness(1.08); }
 .ink-input__quill:disabled { opacity: 0.45; cursor: default; filter: grayscale(0.4); }
-
-/* ---- hourglass (history toggle) ---- */
-.hourglass {
-  all: unset;
-  pointer-events: auto;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  color: var(--candle);
-  border: 1px solid rgba(120, 92, 54, 0.5);
-  background: rgba(239, 226, 194, 0.7);
-  backdrop-filter: blur(2px);
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-.hourglass:hover { transform: scale(1.08); color: var(--candle-hot); }
-.hourglass--active { color: var(--candle-hot); box-shadow: 0 0 18px -4px rgba(224, 153, 63, 0.8); }
-.hourglass__sand { opacity: 0.85; }
 
 /* ---- history drawer ---- */
 .drawer {
@@ -342,14 +311,6 @@
 }
 .skip-intro:hover { opacity: 1; }
 
-/* top-right cluster: hourglass */
-.tools {
-  position: fixed;
-  top: 1.2rem; right: 1.2rem;
-  z-index: 15;
-  pointer-events: auto;
-}
-
 /* ---- keyframes ---- */
 @keyframes ink-bleed {
   from { opacity: 0; transform: translateY(4px); filter: blur(1.5px); }
@@ -362,5 +323,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bubble, .reasoning__ember.is-alive, .bubble__dots i, .reasoning__caret { animation: none; }
-  .drawer, .drawer__panel, .ink-input__quill, .hourglass { transition: none; }
+  .drawer, .drawer__panel, .ink-input__quill { transition: none; }
+  .open-book-hint { animation: none; }
 }
