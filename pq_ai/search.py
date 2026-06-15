@@ -24,7 +24,6 @@ WEAPON_SYNONYMS = {
 
 class SearchEngine:
     """Database search engine for items, enemies, and locations."""
-    
     def __init__(self):
         self.items: Dict[str, dict] = {}
         self.enemies: Dict[str, dict] = {}
@@ -111,7 +110,7 @@ class SearchEngine:
             # Apply text query filter
             score = 0
             if query_lower:
-                text_blob = f"{name} {item.get('description', '')} {item.get('item_type', '')} {item.get('weapon_type', '')}".lower()
+                text_blob = f"{name} {item.get('description', '')} {item.get('item_type', '')} {item.get('subtype', '')} {item.get('weapon_type', '')}".lower()
                 
                 # Check for exact matches
                 if query_lower in name.lower():

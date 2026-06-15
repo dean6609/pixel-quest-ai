@@ -23,7 +23,8 @@ class Item:
     pageid: int = 0
     name: str = ""
     tier: str = ""
-    item_type: str = ""  # Primary Weapon, Armor, Accessory, etc.
+    item_type: str = ""  # Primary Weapon, Secondary Ability, Armor, Accessory
+    subtype: str = ""  # Bow, Heavy Armor, Helmet, Totem, ... (specific category)
     weapon_type: str = ""  # Sword, Bow, Staff, Dagger, Axe (if weapon)
     categories: list = field(default_factory=list)
     description: str = ""

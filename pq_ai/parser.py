@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from . import config
+from . import taxonomy
 from .models import Item, WeaponStats, Enemy, Location
 
 logger = logging.getLogger(__name__)
@@ -65,8 +66,14 @@ def parse_item_wikitext(title: str, wikitext: str) -> Optional[Item]:
     if cats_text:
         item.categories = _extract_categories(cats_text)
     
-    # Determine item type from categories
-    item.item_type = _determine_item_type(item.categories, item.weapon_type)
+    # Determine item type + subtype from categories (canonical taxonomy is the
+    # source of truth; fall back to legacy heuristics only when unmatched).
+    item.item_type, item.subtype = taxonomy.classify(item.categories)
+    if not item.item_type:
+        item.item_type = _determine_item_type(item.categories, item.weapon_type)
+    # Backfill weapon_type for primary weapons whose head didn't expose it.
+    if item.item_type == "Primary Weapon" and not item.weapon_type and item.subtype:
+        item.weapon_type = item.subtype
     
     # Parse on_equip stats
     on_equip_text = params.get("on_equip", "")
