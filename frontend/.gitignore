@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Re-include app source dirs that the repo-root .gitignore (Python) would otherwise ignore
+!src/lib/
+!src/lib/**
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
