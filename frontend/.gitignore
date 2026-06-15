@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/.playwright-mcp/
+
 # Re-include app source dirs that the repo-root .gitignore (Python) would otherwise ignore
 !src/lib/
 !src/lib/**
