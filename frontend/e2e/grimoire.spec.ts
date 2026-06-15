@@ -7,7 +7,6 @@ const SSE_BODY =
   'event: done\ndata: {}\n\n';
 
 test.beforeEach(async ({ page }) => {
-  // Mock the streaming backend with a canned SSE response.
   await page.route("**/api/ask/stream", async (route) => {
     await route.fulfill({
       status: 200,
@@ -17,19 +16,23 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("ask a question, watch it answer, then revisit it from history", async ({ page }) => {
+test("open the book, ask, then revisit it from history", async ({ page }) => {
   await page.goto("/");
 
-  // The 3D scene keeps the main thread busy, which makes Playwright's real-input
-  // click path (actionability + synthetic mouse) flaky. Dispatching the DOM
-  // click event directly drives React's onClick handlers deterministically.
+  // The 3D scene keeps the main thread busy; dispatch DOM clicks directly so
+  // React onClick handlers fire deterministically.
   const click = (sel: ReturnType<typeof page.getByRole>) => sel.dispatchEvent("click");
 
   // Skip the cinematic intro if its affordance is still on screen.
-  const skip = page.getByRole("button", { name: /abrir el grimorio/i });
+  const skip = page.getByRole("button", { name: /saltar la intro/i });
   if (await skip.isVisible().catch(() => false)) {
     await click(skip);
   }
+
+  // The closed book floats; open it via its accessible twin.
+  const openBook = page.getByRole("button", { name: /abrir el grimorio/i });
+  await expect(openBook).toBeVisible();
+  await click(openBook);
 
   const input = page.getByRole("textbox", { name: /consulta para el grimorio/i });
   await expect(input).toBeVisible();
@@ -38,25 +41,22 @@ test("ask a question, watch it answer, then revisit it from history", async ({ p
   await input.fill(question);
   await input.press("Enter");
 
-  // The answer streams in.
-  await expect(page.getByText("La espada reposa en el Templo del Alba.")).toBeVisible();
-  // The user's question is rendered as a bubble.
-  await expect(page.getByText(question)).toBeVisible();
+  const conversationLog = page.getByRole("log");
+  await expect(conversationLog.getByText("La espada reposa en el Templo del Alba.")).toBeVisible();
+  await expect(conversationLog.getByText(question)).toBeVisible();
 
-  // Reasoning collapsed once the answer arrived; expand it to confirm it streamed.
   const reasoningToggle = page.getByRole("button", { name: /razonamiento/i });
   await expect(reasoningToggle).toBeVisible();
   await click(reasoningToggle);
   await expect(page.getByText(/Consultando los tomos antiguos/)).toBeVisible();
 
-  // Open history; the conversation should be listed.
+  // Open history via the hourglass twin; the conversation should be listed.
   await click(page.getByRole("button", { name: /conversaciones pasadas/i }));
   const historyEntry = page.getByRole("button", { name: question });
   await expect(historyEntry).toBeVisible();
 
   // Reopen it and confirm the messages are restored in the conversation log.
   await click(historyEntry);
-  const log = page.getByRole("log");
-  await expect(log.getByText("La espada reposa en el Templo del Alba.")).toBeVisible();
-  await expect(log.getByText(question)).toBeVisible();
+  await expect(conversationLog.getByText("La espada reposa en el Templo del Alba.")).toBeVisible();
+  await expect(conversationLog.getByText(question)).toBeVisible();
 });
