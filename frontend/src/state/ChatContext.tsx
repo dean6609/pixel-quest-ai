@@ -8,6 +8,7 @@ interface ChatValue {
   messages: Message[]; reasoning: string; phase: string; historyOpen: boolean;
   send: (q: string) => Promise<void>;
   loadConversation: (c: Conversation) => void;
+  openBook: () => void;
   toggleHistory: () => void; skipIntro: () => void; introDone: () => void;
 }
 const Ctx = createContext<ChatValue | null>(null);
@@ -49,6 +50,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const loadConversation = useCallback((c: Conversation) => {
     convId.current = c.id; setMessages(c.messages); setReasoning("");
+    dispatch({ type: "OPEN_BOOK" });
     if (scene.historyOpen) dispatch({ type: "TOGGLE_HISTORY" });
   }, [scene.historyOpen]);
 
@@ -56,6 +58,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={{
       messages, reasoning, phase: scene.phase, historyOpen: scene.historyOpen,
       send, loadConversation,
+      openBook: () => dispatch({ type: "OPEN_BOOK" }),
       toggleHistory: () => dispatch({ type: "TOGGLE_HISTORY" }),
       skipIntro: () => dispatch({ type: "SKIP_INTRO" }),
       introDone: () => dispatch({ type: "INTRO_DONE" }),
