@@ -1,0 +1,363 @@
+/* ===========================================================================
+   Grimoire 2D overlay — ink on parchment, lit by candle.
+   Sits crisply above the 3D <Canvas>, centred over the open book.
+   =========================================================================== */
+
+:root {
+  --ink:        #2a1d12;
+  --ink-soft:   #5b4632;
+  --ink-faint:  #897059;
+  --parchment:  #efe2c2;
+  --parchment-deep: #e3d2a8;
+  --candle:     #e0993f;
+  --candle-hot: #ffcf7a;
+  --ember:      #c75b29;
+  --rule:       rgba(90, 64, 38, 0.28);
+
+  --serif-display: "IM Fell English", "EB Garamond", Georgia, serif;
+  --serif-body:    "EB Garamond", Georgia, "Times New Roman", serif;
+}
+
+/* The overlay layer floats above the canvas but lets the room breathe at edges. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  pointer-events: none;          /* canvas stays interactive; children opt back in */
+  padding: clamp(1.5rem, 4vh, 3rem) 1rem;
+}
+
+.overlay > * { pointer-events: auto; }
+
+/* The book-page surface holding the conversation. */
+.codex {
+  pointer-events: auto;
+  width: min(680px, 92vw);
+  max-height: 64vh;
+  margin: 0 auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  color: var(--ink);
+  font-family: var(--serif-body);
+  font-size: 1.075rem;
+  line-height: 1.62;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(255, 207, 122, 0.10), transparent 60%),
+    linear-gradient(180deg, rgba(239, 226, 194, 0.93), rgba(227, 210, 168, 0.90));
+  border: 1px solid rgba(120, 92, 54, 0.45);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 0 rgba(255, 246, 220, 0.6) inset,
+    0 30px 60px -28px rgba(0, 0, 0, 0.7),
+    0 0 90px -30px rgba(224, 153, 63, 0.55);
+  position: relative;
+  overflow: hidden;
+}
+
+/* faint vertical gutter, like a bound spine */
+.codex::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 49.4%, rgba(90, 64, 38, 0.14) 50%, transparent 50.6%);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ---- conversation scroll area ---- */
+.chat-panel {
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-faint) transparent;
+}
+.chat-panel--empty {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 9rem;
+}
+.chat-panel__prompt {
+  font-family: var(--serif-display);
+  font-size: 1.35rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+/* ---- message bubbles ---- */
+.bubble {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  animation: ink-bleed 0.5s ease both;
+}
+.bubble__sigil {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--candle);
+  text-shadow: 0 0 8px rgba(224, 153, 63, 0.45);
+}
+.bubble--user { color: var(--ink-soft); }
+.bubble--user .bubble__body { font-style: italic; }
+.bubble--assistant { color: var(--ink); }
+.bubble__body > :first-child { margin-top: 0; }
+.bubble__body > :last-child { margin-bottom: 0; }
+.bubble__body p { margin: 0 0 0.55em; }
+.bubble__body code {
+  font-family: "IM Fell English", monospace;
+  background: rgba(90, 64, 38, 0.12);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+.bubble__body pre {
+  background: rgba(42, 29, 18, 0.9);
+  color: var(--parchment);
+  padding: 0.8em 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+.bubble__body a { color: var(--ember); text-underline-offset: 2px; }
+
+.bubble__dots { display: inline-flex; gap: 0.35rem; padding: 0.3rem 0; }
+.bubble__dots i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ink-faint);
+  animation: candle-pulse 1.1s ease-in-out infinite;
+}
+.bubble__dots i:nth-child(2) { animation-delay: 0.18s; }
+.bubble__dots i:nth-child(3) { animation-delay: 0.36s; }
+
+/* ---- reasoning stream ---- */
+.reasoning {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.35rem 0;
+  font-family: var(--serif-display);
+}
+.reasoning__toggle {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+.reasoning__chevron { margin-left: auto; opacity: 0.6; }
+.reasoning__ember {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ink-faint);
+  flex: none;
+}
+.reasoning__ember.is-alive {
+  background: var(--candle-hot);
+  box-shadow: 0 0 10px 2px rgba(224, 153, 63, 0.7);
+  animation: candle-pulse 0.9s ease-in-out infinite;
+}
+.reasoning__text {
+  margin-top: 0.5rem;
+  max-height: 11rem;
+  overflow-y: auto;
+  font-family: var(--serif-body);
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--ink-faint);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.reasoning__caret {
+  display: inline-block;
+  width: 0.5ch; height: 1em;
+  margin-left: 1px;
+  background: var(--ember);
+  vertical-align: text-bottom;
+  animation: candle-pulse 0.8s steps(2) infinite;
+}
+
+/* ---- input bar (lives in the bottom row of .overlay) ---- */
+.composer {
+  pointer-events: auto;
+  width: min(680px, 92vw);
+  margin: 0.75rem auto 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ink-input {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.95rem;
+  background: linear-gradient(180deg, rgba(244, 234, 208, 0.95), rgba(231, 216, 180, 0.92));
+  border: 1px solid rgba(120, 92, 54, 0.5);
+  border-radius: 999px;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 246, 220, 0.4) inset;
+}
+.ink-input__field {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--serif-body);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  max-height: 6.5em;
+}
+.ink-input__field::placeholder { color: var(--ink-faint); font-style: italic; }
+.ink-input__quill {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  color: var(--parchment);
+  background: radial-gradient(circle at 35% 30%, var(--candle-hot), var(--ember));
+  box-shadow: 0 0 16px -2px rgba(224, 153, 63, 0.8);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.ink-input__quill:hover { transform: rotate(-8deg) scale(1.06); filter: brightness(1.08); }
+.ink-input__quill:disabled { opacity: 0.45; cursor: default; filter: grayscale(0.4); }
+
+/* ---- hourglass (history toggle) ---- */
+.hourglass {
+  all: unset;
+  pointer-events: auto;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  color: var(--candle);
+  border: 1px solid rgba(120, 92, 54, 0.5);
+  background: rgba(239, 226, 194, 0.7);
+  backdrop-filter: blur(2px);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.hourglass:hover { transform: scale(1.08); color: var(--candle-hot); }
+.hourglass--active { color: var(--candle-hot); box-shadow: 0 0 18px -4px rgba(224, 153, 63, 0.8); }
+.hourglass__sand { opacity: 0.85; }
+
+/* ---- history drawer ---- */
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.drawer--open { pointer-events: auto; opacity: 1; }
+.drawer__veil {
+  position: absolute; inset: 0;
+  background: radial-gradient(80% 80% at 80% 50%, rgba(0,0,0,0.2), rgba(0,0,0,0.55));
+}
+.drawer__panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(360px, 86vw);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 1.4rem 1.2rem;
+  color: var(--ink);
+  font-family: var(--serif-body);
+  background:
+    linear-gradient(180deg, rgba(232, 217, 182, 0.98), rgba(218, 200, 158, 0.98));
+  border-left: 1px solid rgba(120, 92, 54, 0.6);
+  box-shadow: -30px 0 60px -30px rgba(0,0,0,0.8);
+  overflow-y: auto;
+}
+.drawer--open .drawer__panel { transform: translateX(0); }
+.drawer__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
+.drawer__title {
+  font-family: var(--serif-display);
+  font-style: italic;
+  font-size: 1.4rem;
+  margin: 0;
+  color: var(--ink);
+}
+.drawer__close { all: unset; cursor: pointer; color: var(--ink-soft); font-size: 1.1rem; }
+.drawer__close:hover { color: var(--ember); }
+.drawer__empty { color: var(--ink-faint); font-style: italic; }
+.drawer__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.drawer__item { display: flex; align-items: stretch; gap: 0.4rem; }
+.drawer__open {
+  all: unset;
+  cursor: pointer;
+  flex: 1;
+  padding: 0.6rem 0.7rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.drawer__open:hover { background: rgba(255, 246, 220, 0.5); border-color: var(--rule); }
+.drawer__item-title { font-size: 1.02rem; color: var(--ink); }
+.drawer__item-when { font-size: 0.8rem; color: var(--ink-faint); font-style: italic; }
+.drawer__erase {
+  all: unset; cursor: pointer;
+  display: grid; place-items: center;
+  width: 2rem;
+  color: var(--ink-faint);
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.drawer__erase:hover { color: var(--ember); background: rgba(199, 91, 41, 0.12); }
+
+/* ---- skip-intro affordance ---- */
+.skip-intro {
+  position: fixed;
+  bottom: 1.4rem; right: 1.4rem;
+  z-index: 15;
+  all: unset;
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: var(--serif-display);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--parchment);
+  opacity: 0.7;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+  transition: opacity 0.2s ease;
+}
+.skip-intro:hover { opacity: 1; }
+
+/* top-right cluster: hourglass */
+.tools {
+  position: fixed;
+  top: 1.2rem; right: 1.2rem;
+  z-index: 15;
+  pointer-events: auto;
+}
+
+/* ---- keyframes ---- */
+@keyframes ink-bleed {
+  from { opacity: 0; transform: translateY(4px); filter: blur(1.5px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes candle-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50%      { opacity: 1; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble, .reasoning__ember.is-alive, .bubble__dots i, .reasoning__caret { animation: none; }
+}
