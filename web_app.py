@@ -10,7 +10,7 @@ except ImportError:
     pass  # python-dotenv not installed; rely on system env vars
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Literal
@@ -18,7 +18,7 @@ import uvicorn
 
 from pq_ai.database import Database
 from pq_ai.search import SearchEngine
-from pq_ai.deepseek_rag import ask_rag, strip_reasoning, strip_html_reasoning
+from pq_ai.deepseek_rag import ask_rag, strip_reasoning, strip_html_reasoning, ask_rag_stream
 from pq_ai import extractor as wiki_extractor
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -112,6 +112,15 @@ def ask(req: AskRequest):
     except Exception as e:
         logger.error(f"Ask error: {e}")
         return JSONResponse({"response": f"Error: {e}", "items_used": 0})
+
+@app.post("/api/ask/stream")
+def ask_stream(req: AskRequest):
+    if not loaded:
+        raise HTTPException(400, "No database")
+    history = [{"role": m.role, "content": strip_reasoning(strip_html_reasoning(m.content))}
+               for m in (req.history or [])][-10:]
+    gen = ask_rag_stream(req.query, search, level=req.level, location=req.location, history=history)
+    return StreamingResponse(gen, media_type="text/event-stream")
 
 @app.get("/api/items")
 def list_items(tier: Optional[str] = None, item_type: Optional[str] = None, limit: int = 50):
