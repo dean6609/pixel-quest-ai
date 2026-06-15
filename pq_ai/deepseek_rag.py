@@ -651,3 +651,122 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     except Exception as e:
         logger.error(f"DeepSeek API error: {e}")
         return f"⚠️ Error al consultar la IA: {e}"
+
+
+def _run_tool(func_name: str, args_str: str, search_engine: Any) -> str:
+    args = json.loads(args_str or "{}")
+    if func_name == "search_database":
+        results = search_engine.search(query=args.get("query", ""), tier_filter=args.get("tier"),
+            type_filter=args.get("item_type"), weapon_type_filter=args.get("weapon_type"), top_k=10)
+        return format_search_results(results)
+    if func_name == "search_enemies":
+        results = search_engine.search_enemies(query=args.get("query", ""), category=args.get("category"),
+            location=args.get("location"), entity_type=args.get("entity_type"), top_k=10)
+        return format_enemy_results(results)
+    if func_name == "search_locations":
+        results = search_engine.search_locations(query=args.get("query", ""),
+            location_type=args.get("location_type"), max_difficulty=args.get("max_difficulty"), top_k=10)
+        return format_location_results(results)
+    return "Herramienta desconocida."
+
+
+def _accumulate_tool_calls(acc: dict, deltas) -> None:
+    """Merge streamed tool_call deltas into acc keyed by index."""
+    for d in deltas or []:
+        idx = getattr(d, "index", 0)
+        slot = acc.setdefault(idx, {"id": None, "name": None, "arguments": ""})
+        if getattr(d, "id", None):
+            slot["id"] = d.id
+        fn = getattr(d, "function", None)
+        if fn is not None:
+            if getattr(fn, "name", None):
+                slot["name"] = fn.name
+            if getattr(fn, "arguments", None):
+                slot["arguments"] += fn.arguments
+
+
+def ask_rag_stream(query: str, search_engine: Any, level: int = 0,
+                   location: str = "", history: Optional[List[Dict[str, str]]] = None):
+    """Streaming RAG. Yields SSE strings (event: reasoning/status/answer/done/error)."""
+    client = get_openai_client()
+    if not client:
+        yield sse_event("error", {"message": "DeepSeek API no disponible. Revisa tu clave API."})
+        return
+
+    messages = [{"role": "system", "content": build_system_prompt(search_engine)}]
+    if history:
+        for turn in history:
+            messages.append({"role": turn["role"],
+                             "content": strip_html_reasoning(turn["content"])})
+    user_prompt = f"Consulta del jugador: {query}\n"
+    if level: user_prompt += f"Nivel: {level}\n"
+    if location: user_prompt += f"Zona: {location}\n"
+    messages.append({"role": "user", "content": user_prompt})
+
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+    MAX_TOOL_ROUNDS = 25
+    seen_signatures: set = set()
+    thinking_params = {"thinking": {"type": "enabled"}, "reasoning_effort": "high"}
+
+    try:
+        yield sse_event("status", {"state": "thinking"})
+        for _round in range(MAX_TOOL_ROUNDS + 1):
+            stream = client.chat.completions.create(
+                model=model, messages=messages, tools=TOOLS, tool_choice="auto",
+                temperature=0.3, max_tokens=3000, extra_body=thinking_params, stream=True)
+
+            content_buf = ""
+            tool_acc: dict = {}
+            for chunk in stream:
+                delta = chunk.choices[0].delta
+                r = getattr(delta, "reasoning_content", None)
+                if r:
+                    yield sse_event("reasoning", {"delta": r})
+                c = getattr(delta, "content", None)
+                if c:
+                    content_buf += c
+                tc = getattr(delta, "tool_calls", None)
+                if tc:
+                    _accumulate_tool_calls(tool_acc, tc)
+
+            tool_calls = [
+                {"id": v["id"] or f"call_{i}", "type": "function",
+                 "function": {"name": v["name"], "arguments": v["arguments"] or "{}"}}
+                for i, v in sorted(tool_acc.items())
+            ]
+
+            if not tool_calls:
+                final = content_buf
+                if not strip_reasoning(final).strip():
+                    final = _force_final_answer(client, messages, model, thinking_params)
+                else:
+                    _, final = extract_reasoning(final)
+                if final:
+                    yield sse_event("answer", {"delta": final})
+                yield sse_event("done", {})
+                return
+
+            # repetition guard
+            sigs = {(tc["function"]["name"], tc["function"]["arguments"]) for tc in tool_calls}
+            if sigs and sigs.issubset(seen_signatures):
+                yield sse_event("answer", {"delta": _force_final_answer(client, messages, model, thinking_params)})
+                yield sse_event("done", {})
+                return
+            seen_signatures |= sigs
+
+            yield sse_event("status", {"state": "searching"})
+            messages.append({"role": "assistant", "content": content_buf or None,
+                             "tool_calls": tool_calls})
+            for tc in tool_calls:
+                messages.append({"tool_call_id": tc["id"], "role": "tool",
+                                 "name": tc["function"]["name"],
+                                 "content": _run_tool(tc["function"]["name"],
+                                                      tc["function"]["arguments"], search_engine)})
+            yield sse_event("status", {"state": "thinking"})
+
+        # backstop reached
+        yield sse_event("answer", {"delta": _force_final_answer(client, messages, model, thinking_params)})
+        yield sse_event("done", {})
+    except Exception as e:
+        logger.error(f"Stream error: {e}")
+        yield sse_event("error", {"message": str(e)})
