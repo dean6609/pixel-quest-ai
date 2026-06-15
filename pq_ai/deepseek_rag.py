@@ -104,6 +104,8 @@ Si te preguntan por recomendaciones para empezar (ej. "arco inicial"), usa la he
 2. Si el usuario pregunta algo general, usa la herramienta de búsqueda para obtener contexto antes de responder.
 3. Considera el nivel, zona disponible y estilo de juego del jugador si te lo proporcionan.
 4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos".
+5. Si necesitas consultar varios temas, haz TODAS las búsquedas necesarias en un mismo turno (en paralelo), no una por una. No repitas una búsqueda que ya hiciste.
+6. Tómate el tiempo que necesites para investigar, pero SIEMPRE termina con una respuesta clara y útil para el jugador.
 
 ## HIPERVÍNCULOS:
 Cuando menciones un objeto, enemigo o ubicación por nombre, SIEMPRE incluye un hipervínculo markdown a su página del wiki.
@@ -327,6 +329,57 @@ def format_location_results(locations: List[dict]) -> str:
         )
     return "\n".join(parts)
 
+def _tool_call_signature(tool_call: Any) -> tuple:
+    """Build a (name, arguments) signature to detect repeated tool calls."""
+    if isinstance(tool_call, dict):
+        fn = tool_call.get("function", {})
+        return (fn.get("name"), fn.get("arguments"))
+    return (tool_call.function.name, tool_call.function.arguments)
+
+
+def _force_final_answer(client: Any, messages: List[Dict[str, Any]], model: str,
+                        thinking_params: Dict[str, Any]) -> str:
+    """Force a clean final answer without tools.
+
+    Guarantees a non-empty response even when the model returns everything as
+    reasoning content (the blank-response bug). Used both when the round backstop
+    is reached and when the model loops on repeated searches.
+    """
+    messages = messages + [{
+        "role": "user",
+        "content": "Da tu respuesta final al jugador basándote en lo que ya investigaste. "
+                   "No busques más, solo responde de forma clara y útil.",
+    }]
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0.3,
+        max_tokens=3000,
+        extra_body=thinking_params,
+    )
+    content = response.choices[0].message.content or ""
+    reasoning_html, clean_content = extract_reasoning(content)
+
+    # Last resort: if it STILL returned only reasoning, ask once more without
+    # thinking so we never hand the user a blank message.
+    if not clean_content.strip():
+        logger.warning("Forced answer was empty (all reasoning) — retrying without thinking...")
+        retry_messages = messages + [
+            {"role": "assistant", "content": content},
+            {"role": "user", "content": "Por favor, da tu respuesta final al jugador. No pienses más, solo responde."},
+        ]
+        retry = client.chat.completions.create(
+            model=model,
+            messages=retry_messages,
+            temperature=0.3,
+            max_tokens=3000,
+        )
+        extra_reasoning, clean_content = extract_reasoning(retry.choices[0].message.content or "")
+        reasoning_html += extra_reasoning
+
+    return reasoning_html + clean_content
+
+
 def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", history: Optional[List[Dict[str, str]]] = None) -> str:
     """Main RAG query function using Function Calling with multi-round tool loop."""
     client = get_openai_client()
@@ -349,7 +402,10 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     messages.append({"role": "user", "content": user_prompt})
     
     model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
-    MAX_TOOL_ROUNDS = 8
+    # Generous safety backstop, not a functional cap: the model searches as much
+    # as it needs and answers when ready. This only protects against runaway loops.
+    MAX_TOOL_ROUNDS = 25
+    seen_signatures: set = set()
 
     # DeepSeek v4 thinking mode parameters (sent via extra_body for OpenAI SDK compat)
     thinking_params = {
@@ -427,7 +483,15 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                     reasoning_html += extra_reasoning
 
                 return reasoning_html + clean_content
-            
+
+            # Repetition guard: if every search requested this round was already
+            # executed before, the model is looping — force it to answer instead.
+            current_signatures = {_tool_call_signature(tc) for tc in tool_calls}
+            if current_signatures and current_signatures.issubset(seen_signatures):
+                logger.warning("Repeated tool calls detected — forcing final answer")
+                return _force_final_answer(client, messages, model, thinking_params)
+            seen_signatures |= current_signatures
+
             logger.info(f"Round {round_num + 1} - Processing {len(tool_calls)} tool calls...")
             
             if use_text_tool_calls:
@@ -523,19 +587,9 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                         "content": tool_content
                     })
         
-        # Exhausted all tool rounds - force a text response without tools
-        logger.warning(f"Exhausted {MAX_TOOL_ROUNDS} tool rounds, forcing text response...")
-        final_response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0.3,
-            max_tokens=3000,
-            extra_body=thinking_params
-        )
-        final_content = final_response.choices[0].message.content
-        logger.info(f"Forced final response length: {len(final_content) if final_content else 0}")
-        reasoning_html, clean_content = extract_reasoning(final_content or "")
-        return reasoning_html + clean_content
+        # Reached the safety backstop - force a clean final answer (never blank)
+        logger.warning(f"Reached backstop of {MAX_TOOL_ROUNDS} tool rounds, forcing final answer...")
+        return _force_final_answer(client, messages, model, thinking_params)
             
     except Exception as e:
         logger.error(f"DeepSeek API error: {e}")
