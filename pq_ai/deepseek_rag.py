@@ -170,6 +170,11 @@ def build_system_prompt(search_engine: Any) -> str:
     return SYSTEM_PROMPT_BASE.replace("<<REFERENCIA_DINAMICA>>",
                                       build_game_reference(search_engine))
 
+
+def sse_event(event: str, data: Dict[str, Any]) -> str:
+    """Serialize one Server-Sent Event."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
 TOOLS = [
     {
         "type": "function",
