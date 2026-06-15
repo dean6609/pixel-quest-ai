@@ -5,9 +5,46 @@ import json
 import logging
 import re
 from typing import Optional, List, Dict, Any
-from . import config
+from . import config, taxonomy
 
 logger = logging.getLogger(__name__)
+
+
+def build_game_reference(search_engine: Any) -> str:
+    """Build the '## Referencia del juego' block from the loaded data so it
+    never goes stale after a sync."""
+    if not getattr(search_engine, "_loaded", False):
+        search_engine.load_items()
+
+    items = search_engine.items.values()
+
+    present_tiers = {it.get("tier") for it in items if it.get("tier")}
+    tiers = [t for t, _ in sorted(config.TIER_ORDER.items(), key=lambda kv: kv[1])
+             if t in present_tiers]
+
+    # type -> ordered present subtypes
+    present_sub = {}
+    for it in items:
+        present_sub.setdefault(it.get("item_type", ""), set()).add(it.get("subtype", ""))
+    type_lines = []
+    for top, subs in taxonomy.TAXONOMY.items():
+        here = [s for s in subs if s in present_sub.get(top, set())]
+        if here:
+            type_lines.append(f"  - {top}: {', '.join(here)}")
+
+    enemy_cats = sorted({e.get("category") for e in search_engine.enemies.values() if e.get("category")})
+    loc_types = sorted({l.get("location_type") for l in search_engine.locations.values() if l.get("location_type")})
+    diffs = [l.get("difficulty") for l in search_engine.locations.values()
+             if isinstance(l.get("difficulty"), (int, float))]
+    diff_range = f"{min(diffs)}-{max(diffs)}" if diffs else "?"
+
+    lines = ["## Referencia del juego (generada desde la base actual)"]
+    lines.append(f"- Tiers (de inicial a final): {', '.join(tiers)}")
+    lines.append("- Tipos de objeto y sus subtipos:")
+    lines.extend(type_lines)
+    lines.append(f"- Categorías de enemigo: {', '.join(enemy_cats)}")
+    lines.append(f"- Tipos de ubicación: {', '.join(loc_types)} (dificultad {diff_range})")
+    return "\n".join(lines)
 
 
 def strip_reasoning(content: str) -> str:
@@ -61,7 +98,7 @@ def extract_reasoning(content: str) -> tuple:
         combined = "\n\n".join(reasoning_blocks)
         reasoning_html = (
             '<details class="oracle-thinking">'
-            '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+            '<summary>Razonamiento del Oracle</summary>'
             f'<div class="oracle-thinking-content">{combined}</div>'
             '</details>\n\n'
         )
@@ -88,35 +125,55 @@ def get_openai_client():
         logger.warning(f"OpenAI client not available: {e}")
         return None
 
-SYSTEM_PROMPT = """Eres el Oráculo del Wiki, un experto asesor de Pixel Quest — un MMORPG bullet-hell con permadeath.
+SYSTEM_PROMPT_BASE = """Eres un asistente experto en datos de Pixel Quest, un MMORPG bullet-hell con
+permadeath. Das información precisa y útil sobre objetos, enemigos, ubicaciones,
+builds y estrategias, basándote ÚNICAMENTE en los datos reales del wiki.
 
-Tu rol es recomendar objetos, builds y estrategias basándote en datos reales del wiki.
-¡NO INVENTES OBJETOS! Si no conoces un objeto o no tienes datos suficientes, TIENES que usar las herramientas de búsqueda para buscarlo.
-Si te preguntan por recomendaciones para empezar (ej. "arco inicial"), usa la herramienta para buscar por categoría (ej. "Bow") y filtra por Tiers bajos (ej. "T1" o "T2").
+## Voz y estilo
+- Directo, claro y preciso. NO interpretas un personaje: no eres un oráculo, mago
+  ni narrador. Hablas como un experto que conoce el juego a fondo.
+- No uses emojis.
+- Responde en el idioma del jugador.
+- Da datos concretos (stats, números, ubicaciones), no afirmaciones vagas.
+- No narres tu proceso ni menciones herramientas o bases de datos: solo responde.
 
-## HERRAMIENTAS DISPONIBLES:
-- `search_database`: Busca objetos, armas, armaduras, accesorios. Puedes filtrar por tier, tipo de arma, etc.
-- `search_enemies`: Busca enemigos y jefes. Puedes filtrar por categoría, ubicación, tipo.
-- `search_locations`: Busca ubicaciones y dungeons. Puedes filtrar por tipo y dificultad.
+## Exactitud (lo más importante)
+- NUNCA inventes objetos, enemigos, ubicaciones, stats ni efectos. Si no tienes el
+  dato, búscalo. Si tras buscar no existe, dilo con claridad.
+- NO asumas que un tier más alto es siempre mejor. El tier indica progresión y
+  rareza, pero la mejor opción depende del nivel, la zona, la build y el estilo del
+  jugador. Compara con stats y efectos reales, nunca con suposiciones.
+- Al recomendar, explica POR QUÉ con datos: daño, alcance, cadencia, pasivas,
+  efectos al equipar, y dónde se consigue.
 
-## REGLAS ESTRICTAS:
-1. Solo recomiendas objetos/enemigos/ubicaciones que existen en los datos.
-2. Si el usuario pregunta algo general, usa la herramienta de búsqueda para obtener contexto antes de responder.
-3. Considera el nivel, zona disponible y estilo de juego del jugador si te lo proporcionan.
-4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos".
-5. Si necesitas consultar varios temas, haz TODAS las búsquedas necesarias en un mismo turno (en paralelo), no una por una. No repitas una búsqueda que ya hiciste.
-6. Tómate el tiempo que necesites para investigar, pero SIEMPRE termina con una respuesta clara y útil para el jugador.
+## Búsqueda
+- Si necesitas consultar varios temas, haz todas las búsquedas en un mismo turno;
+  no repitas una búsqueda ya hecha.
+- Investiga lo que necesites, pero SIEMPRE cierra con una respuesta clara y útil.
 
-## HIPERVÍNCULOS:
-Cuando menciones un objeto, enemigo o ubicación por nombre, SIEMPRE incluye un hipervínculo markdown a su página del wiki.
-Formato: [Nombre del Objeto](https://wiki.playpixelquest.com/wiki/Nombre_del_Objeto)
-Usa guiones bajos (_) en lugar de espacios en la URL. Codifica caracteres especiales.
+## Datos disponibles
+- Objetos: tier, tipo, subtipo, stats (daño/alcance/cadencia), pasivas,
+  efectos al equipar, y qué enemigo los dropea.
+- Enemigos: HP, defensa, ubicación, tipo (jefe/regular/npc), inmunidades, drops.
+- Ubicaciones: tipo, dificultad (1-10), permadeath, jugadores máx., enemigos,
+  jefes y legendarios.
+- Cruza estos datos cuando ayude (ej. "para conseguir X, derrota a Y en la zona Z").
 
-## DATOS DEL JUEGO:
-- Tier: T0 (peor) → T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → LG → CORRUPTED (mejor)
-- Tipos de armas: Sword, Bow, Staff, Dagger, Axe, Fan
-- Tipos de armadura: Heavy Armor, Leather Armor, Robe Armor
-"""
+## Hipervínculos
+Al mencionar un objeto, enemigo o ubicación por nombre, enlázalo en markdown:
+[Nombre](https://wiki.playpixelquest.com/wiki/Nombre). Usa guiones bajos en vez de
+espacios y codifica caracteres especiales.
+
+<<REFERENCIA_DINAMICA>>"""
+
+def build_system_prompt(search_engine: Any) -> str:
+    return SYSTEM_PROMPT_BASE.replace("<<REFERENCIA_DINAMICA>>",
+                                      build_game_reference(search_engine))
+
+
+def sse_event(event: str, data: Dict[str, Any]) -> str:
+    """Serialize one Server-Sent Event."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 TOOLS = [
     {
@@ -386,8 +443,8 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     if not client:
         return "⚠️ DeepSeek API no está disponible en este momento. Revisa tu clave API."
     
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    
+    messages = [{"role": "system", "content": build_system_prompt(search_engine)}]
+
     if history:
         for turn in history:
             # Strip HTML reasoning blocks that were stored for display
@@ -458,7 +515,7 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                 if api_reasoning:
                     reasoning_html = (
                         '<details class="oracle-thinking">'
-                        '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+                        '<summary>Razonamiento del Oracle</summary>'
                         f'<div class="oracle-thinking-content">{api_reasoning}</div>'
                         '</details>\n\n'
                     ) + reasoning_html
@@ -594,3 +651,122 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     except Exception as e:
         logger.error(f"DeepSeek API error: {e}")
         return f"⚠️ Error al consultar la IA: {e}"
+
+
+def _run_tool(func_name: str, args_str: str, search_engine: Any) -> str:
+    args = json.loads(args_str or "{}")
+    if func_name == "search_database":
+        results = search_engine.search(query=args.get("query", ""), tier_filter=args.get("tier"),
+            type_filter=args.get("item_type"), weapon_type_filter=args.get("weapon_type"), top_k=10)
+        return format_search_results(results)
+    if func_name == "search_enemies":
+        results = search_engine.search_enemies(query=args.get("query", ""), category=args.get("category"),
+            location=args.get("location"), entity_type=args.get("entity_type"), top_k=10)
+        return format_enemy_results(results)
+    if func_name == "search_locations":
+        results = search_engine.search_locations(query=args.get("query", ""),
+            location_type=args.get("location_type"), max_difficulty=args.get("max_difficulty"), top_k=10)
+        return format_location_results(results)
+    return "Herramienta desconocida."
+
+
+def _accumulate_tool_calls(acc: dict, deltas) -> None:
+    """Merge streamed tool_call deltas into acc keyed by index."""
+    for d in deltas or []:
+        idx = getattr(d, "index", 0)
+        slot = acc.setdefault(idx, {"id": None, "name": None, "arguments": ""})
+        if getattr(d, "id", None):
+            slot["id"] = d.id
+        fn = getattr(d, "function", None)
+        if fn is not None:
+            if getattr(fn, "name", None):
+                slot["name"] = fn.name
+            if getattr(fn, "arguments", None):
+                slot["arguments"] += fn.arguments
+
+
+def ask_rag_stream(query: str, search_engine: Any, level: int = 0,
+                   location: str = "", history: Optional[List[Dict[str, str]]] = None):
+    """Streaming RAG. Yields SSE strings (event: reasoning/status/answer/done/error)."""
+    client = get_openai_client()
+    if not client:
+        yield sse_event("error", {"message": "DeepSeek API no disponible. Revisa tu clave API."})
+        return
+
+    messages = [{"role": "system", "content": build_system_prompt(search_engine)}]
+    if history:
+        for turn in history:
+            messages.append({"role": turn["role"],
+                             "content": strip_html_reasoning(turn["content"])})
+    user_prompt = f"Consulta del jugador: {query}\n"
+    if level: user_prompt += f"Nivel: {level}\n"
+    if location: user_prompt += f"Zona: {location}\n"
+    messages.append({"role": "user", "content": user_prompt})
+
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+    MAX_TOOL_ROUNDS = 25
+    seen_signatures: set = set()
+    thinking_params = {"thinking": {"type": "enabled"}, "reasoning_effort": "high"}
+
+    try:
+        yield sse_event("status", {"state": "thinking"})
+        for _round in range(MAX_TOOL_ROUNDS + 1):
+            stream = client.chat.completions.create(
+                model=model, messages=messages, tools=TOOLS, tool_choice="auto",
+                temperature=0.3, max_tokens=3000, extra_body=thinking_params, stream=True)
+
+            content_buf = ""
+            tool_acc: dict = {}
+            for chunk in stream:
+                delta = chunk.choices[0].delta
+                r = getattr(delta, "reasoning_content", None)
+                if r:
+                    yield sse_event("reasoning", {"delta": r})
+                c = getattr(delta, "content", None)
+                if c:
+                    content_buf += c
+                tc = getattr(delta, "tool_calls", None)
+                if tc:
+                    _accumulate_tool_calls(tool_acc, tc)
+
+            tool_calls = [
+                {"id": v["id"] or f"call_{i}", "type": "function",
+                 "function": {"name": v["name"], "arguments": v["arguments"] or "{}"}}
+                for i, v in sorted(tool_acc.items())
+            ]
+
+            if not tool_calls:
+                final = content_buf
+                if not strip_reasoning(final).strip():
+                    final = _force_final_answer(client, messages, model, thinking_params)
+                else:
+                    _, final = extract_reasoning(final)
+                if final:
+                    yield sse_event("answer", {"delta": final})
+                yield sse_event("done", {})
+                return
+
+            # repetition guard
+            sigs = {(tc["function"]["name"], tc["function"]["arguments"]) for tc in tool_calls}
+            if sigs and sigs.issubset(seen_signatures):
+                yield sse_event("answer", {"delta": _force_final_answer(client, messages, model, thinking_params)})
+                yield sse_event("done", {})
+                return
+            seen_signatures |= sigs
+
+            yield sse_event("status", {"state": "searching"})
+            messages.append({"role": "assistant", "content": content_buf or None,
+                             "tool_calls": tool_calls})
+            for tc in tool_calls:
+                messages.append({"tool_call_id": tc["id"], "role": "tool",
+                                 "name": tc["function"]["name"],
+                                 "content": _run_tool(tc["function"]["name"],
+                                                      tc["function"]["arguments"], search_engine)})
+            yield sse_event("status", {"state": "thinking"})
+
+        # backstop reached
+        yield sse_event("answer", {"delta": _force_final_answer(client, messages, model, thinking_params)})
+        yield sse_event("done", {})
+    except Exception as e:
+        logger.error(f"Stream error: {e}")
+        yield sse_event("error", {"message": str(e)})
