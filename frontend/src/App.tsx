@@ -18,6 +18,16 @@ function Grimoire() {
   const [revision, setRevision] = useState(0);
   const prevPhase = useRef(phase);
 
+  // With reduced motion the camera fly-in is suppressed, so advance straight
+  // past the intro to the open grimoire on first load.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setSkip(true);
+      skipIntro();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // After each thinking→idle transition a conversation was just saved; refresh history.
   useEffect(() => {
     if (prevPhase.current === "thinking" && phase === "idle") {

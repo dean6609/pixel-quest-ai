@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom, Vignette, DepthOfField } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -15,13 +15,30 @@ interface Props {
   onIntroDone: () => void;
 }
 
+/** Subscribe to the prefers-reduced-motion media query. */
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+}
+
 export function Scene({ phase, bookOpen, skip, onIntroDone }: Props) {
   const thinking = phase === "thinking";
   const agitation = thinking ? 1 : 0;
+  const reduced = usePrefersReducedMotion();
 
   return (
     <Canvas
       className="scene-canvas"
+      // On-demand rendering when motion is reduced keeps the CPU free (a static,
+      // calm scene) — also what makes the page responsive under E2E automation.
+      frameloop={reduced ? "demand" : "always"}
       shadows
       dpr={[1, 2]}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
@@ -43,11 +60,13 @@ export function Scene({ phase, bookOpen, skip, onIntroDone }: Props) {
 
       <CameraRig intro={phase === "intro"} skip={skip} onIntroDone={onIntroDone} />
 
-      <EffectComposer>
-        <DepthOfField focusDistance={0.012} focalLength={0.04} bokehScale={3} />
-        <Bloom intensity={0.9 + agitation * 0.6} luminanceThreshold={0.25} luminanceSmoothing={0.85} mipmapBlur />
-        <Vignette eskil={false} offset={0.28} darkness={0.9} />
-      </EffectComposer>
+      {!reduced && (
+        <EffectComposer>
+          <DepthOfField focusDistance={0.012} focalLength={0.04} bokehScale={3} />
+          <Bloom intensity={0.9 + agitation * 0.6} luminanceThreshold={0.25} luminanceSmoothing={0.85} mipmapBlur />
+          <Vignette eskil={false} offset={0.28} darkness={0.9} />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 }

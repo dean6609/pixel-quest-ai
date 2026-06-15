@@ -266,10 +266,12 @@
 .drawer--open { pointer-events: auto; opacity: 1; }
 .drawer__veil {
   position: absolute; inset: 0;
+  z-index: 0;
   background: radial-gradient(80% 80% at 80% 50%, rgba(0,0,0,0.2), rgba(0,0,0,0.55));
 }
 .drawer__panel {
   position: absolute;
+  z-index: 1;
   top: 0; right: 0; bottom: 0;
   width: min(360px, 86vw);
   transform: translateX(100%);
@@ -360,4 +362,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bubble, .reasoning__ember.is-alive, .bubble__dots i, .reasoning__caret { animation: none; }
+  .drawer, .drawer__panel, .ink-input__quill, .hourglass { transition: none; }
 }
