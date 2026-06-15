@@ -5,9 +5,46 @@ import json
 import logging
 import re
 from typing import Optional, List, Dict, Any
-from . import config
+from . import config, taxonomy
 
 logger = logging.getLogger(__name__)
+
+
+def build_game_reference(search_engine: Any) -> str:
+    """Build the '## Referencia del juego' block from the loaded data so it
+    never goes stale after a sync."""
+    if not getattr(search_engine, "_loaded", False):
+        search_engine.load_items()
+
+    items = search_engine.items.values()
+
+    present_tiers = {it.get("tier") for it in items if it.get("tier")}
+    tiers = [t for t, _ in sorted(config.TIER_ORDER.items(), key=lambda kv: kv[1])
+             if t in present_tiers]
+
+    # type -> ordered present subtypes
+    present_sub = {}
+    for it in items:
+        present_sub.setdefault(it.get("item_type", ""), set()).add(it.get("subtype", ""))
+    type_lines = []
+    for top, subs in taxonomy.TAXONOMY.items():
+        here = [s for s in subs if s in present_sub.get(top, set())]
+        if here:
+            type_lines.append(f"  - {top}: {', '.join(here)}")
+
+    enemy_cats = sorted({e.get("category") for e in search_engine.enemies.values() if e.get("category")})
+    loc_types = sorted({l.get("location_type") for l in search_engine.locations.values() if l.get("location_type")})
+    diffs = [l.get("difficulty") for l in search_engine.locations.values()
+             if isinstance(l.get("difficulty"), (int, float))]
+    diff_range = f"{min(diffs)}-{max(diffs)}" if diffs else "?"
+
+    lines = ["## Referencia del juego (generada desde la base actual)"]
+    lines.append(f"- Tiers (de inicial a final): {', '.join(tiers)}")
+    lines.append("- Tipos de objeto y sus subtipos:")
+    lines.extend(type_lines)
+    lines.append(f"- Categorías de enemigo: {', '.join(enemy_cats)}")
+    lines.append(f"- Tipos de ubicación: {', '.join(loc_types)} (dificultad {diff_range})")
+    return "\n".join(lines)
 
 
 def strip_reasoning(content: str) -> str:
