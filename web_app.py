@@ -163,8 +163,8 @@ def get_recent_changes(limit: int = 20):
         logger.error(f"Changes error: {e}")
         return JSONResponse({"changes": [], "total": 0, "error": str(e)})
 
-# Serve Next.js static files
-FRONTEND_DIR = os.path.join(BASE, "frontend", "out")
+# Serve the Vite (React + R3F) static build
+FRONTEND_DIR = os.path.join(BASE, "frontend", "dist")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 else:
