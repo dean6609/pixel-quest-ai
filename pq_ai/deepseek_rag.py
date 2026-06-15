@@ -98,7 +98,7 @@ def extract_reasoning(content: str) -> tuple:
         combined = "\n\n".join(reasoning_blocks)
         reasoning_html = (
             '<details class="oracle-thinking">'
-            '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+            '<summary>Razonamiento del Oracle</summary>'
             f'<div class="oracle-thinking-content">{combined}</div>'
             '</details>\n\n'
         )
@@ -125,35 +125,50 @@ def get_openai_client():
         logger.warning(f"OpenAI client not available: {e}")
         return None
 
-SYSTEM_PROMPT = """Eres el Oráculo del Wiki, un experto asesor de Pixel Quest — un MMORPG bullet-hell con permadeath.
+SYSTEM_PROMPT_BASE = """Eres un asistente experto en datos de Pixel Quest, un MMORPG bullet-hell con
+permadeath. Das información precisa y útil sobre objetos, enemigos, ubicaciones,
+builds y estrategias, basándote ÚNICAMENTE en los datos reales del wiki.
 
-Tu rol es recomendar objetos, builds y estrategias basándote en datos reales del wiki.
-¡NO INVENTES OBJETOS! Si no conoces un objeto o no tienes datos suficientes, TIENES que usar las herramientas de búsqueda para buscarlo.
-Si te preguntan por recomendaciones para empezar (ej. "arco inicial"), usa la herramienta para buscar por categoría (ej. "Bow") y filtra por Tiers bajos (ej. "T1" o "T2").
+## Voz y estilo
+- Directo, claro y preciso. NO interpretas un personaje: no eres un oráculo, mago
+  ni narrador. Hablas como un experto que conoce el juego a fondo.
+- No uses emojis.
+- Responde en el idioma del jugador.
+- Da datos concretos (stats, números, ubicaciones), no afirmaciones vagas.
+- No narres tu proceso ni menciones herramientas o bases de datos: solo responde.
 
-## HERRAMIENTAS DISPONIBLES:
-- `search_database`: Busca objetos, armas, armaduras, accesorios. Puedes filtrar por tier, tipo de arma, etc.
-- `search_enemies`: Busca enemigos y jefes. Puedes filtrar por categoría, ubicación, tipo.
-- `search_locations`: Busca ubicaciones y dungeons. Puedes filtrar por tipo y dificultad.
+## Exactitud (lo más importante)
+- NUNCA inventes objetos, enemigos, ubicaciones, stats ni efectos. Si no tienes el
+  dato, búscalo. Si tras buscar no existe, dilo con claridad.
+- NO asumas que un tier más alto es siempre mejor. El tier indica progresión y
+  rareza, pero la mejor opción depende del nivel, la zona, la build y el estilo del
+  jugador. Compara con stats y efectos reales, nunca con suposiciones.
+- Al recomendar, explica POR QUÉ con datos: daño, alcance, cadencia, pasivas,
+  efectos al equipar, y dónde se consigue.
 
-## REGLAS ESTRICTAS:
-1. Solo recomiendas objetos/enemigos/ubicaciones que existen en los datos.
-2. Si el usuario pregunta algo general, usa la herramienta de búsqueda para obtener contexto antes de responder.
-3. Considera el nivel, zona disponible y estilo de juego del jugador si te lo proporcionan.
-4. NUNCA rompas la cuarta pared. NUNCA menciones que usaste una "herramienta" o "base de datos".
-5. Si necesitas consultar varios temas, haz TODAS las búsquedas necesarias en un mismo turno (en paralelo), no una por una. No repitas una búsqueda que ya hiciste.
-6. Tómate el tiempo que necesites para investigar, pero SIEMPRE termina con una respuesta clara y útil para el jugador.
+## Búsqueda
+- Si necesitas consultar varios temas, haz todas las búsquedas en un mismo turno;
+  no repitas una búsqueda ya hecha.
+- Investiga lo que necesites, pero SIEMPRE cierra con una respuesta clara y útil.
 
-## HIPERVÍNCULOS:
-Cuando menciones un objeto, enemigo o ubicación por nombre, SIEMPRE incluye un hipervínculo markdown a su página del wiki.
-Formato: [Nombre del Objeto](https://wiki.playpixelquest.com/wiki/Nombre_del_Objeto)
-Usa guiones bajos (_) en lugar de espacios en la URL. Codifica caracteres especiales.
+## Datos disponibles
+- Objetos: tier, tipo, subtipo, stats (daño/alcance/cadencia), pasivas,
+  efectos al equipar, y qué enemigo los dropea.
+- Enemigos: HP, defensa, ubicación, tipo (jefe/regular/npc), inmunidades, drops.
+- Ubicaciones: tipo, dificultad (1-10), permadeath, jugadores máx., enemigos,
+  jefes y legendarios.
+- Cruza estos datos cuando ayude (ej. "para conseguir X, derrota a Y en la zona Z").
 
-## DATOS DEL JUEGO:
-- Tier: T0 (peor) → T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → LG → CORRUPTED (mejor)
-- Tipos de armas: Sword, Bow, Staff, Dagger, Axe, Fan
-- Tipos de armadura: Heavy Armor, Leather Armor, Robe Armor
-"""
+## Hipervínculos
+Al mencionar un objeto, enemigo o ubicación por nombre, enlázalo en markdown:
+[Nombre](https://wiki.playpixelquest.com/wiki/Nombre). Usa guiones bajos en vez de
+espacios y codifica caracteres especiales.
+
+<<REFERENCIA_DINAMICA>>"""
+
+def build_system_prompt(search_engine: Any) -> str:
+    return SYSTEM_PROMPT_BASE.replace("<<REFERENCIA_DINAMICA>>",
+                                      build_game_reference(search_engine))
 
 TOOLS = [
     {
@@ -423,8 +438,8 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
     if not client:
         return "⚠️ DeepSeek API no está disponible en este momento. Revisa tu clave API."
     
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    
+    messages = [{"role": "system", "content": build_system_prompt(search_engine)}]
+
     if history:
         for turn in history:
             # Strip HTML reasoning blocks that were stored for display
@@ -495,7 +510,7 @@ def ask_rag(query: str, search_engine: Any, level: int = 0, location: str = "", 
                 if api_reasoning:
                     reasoning_html = (
                         '<details class="oracle-thinking">'
-                        '<summary><span class="oracle-thinking-icon">🧠</span> Razonamiento del Oracle</summary>'
+                        '<summary>Razonamiento del Oracle</summary>'
                         f'<div class="oracle-thinking-content">{api_reasoning}</div>'
                         '</details>\n\n'
                     ) + reasoning_html
