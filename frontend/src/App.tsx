@@ -41,6 +41,11 @@ function Grimoire() {
 
   return (
     <>
+      <div className="brand" aria-hidden="true">
+        <span className="brand__gem" />
+        <span className="brand__name">IA WIKI</span>
+      </div>
+
       <Scene
         phase={phase as RenderPhase}
         bookOpen={bookOpen}
