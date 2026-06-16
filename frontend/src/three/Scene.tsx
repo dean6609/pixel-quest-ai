@@ -15,6 +15,7 @@ import { CameraRig } from "./CameraRig";
 import { FrameLoopController } from "./FrameLoopController";
 import { FrozenShadows } from "./FrozenShadows";
 import { pickFps, type RenderPhase } from "./render/framePolicy";
+import { PALETTE } from "./palette";
 
 /** Internal render resolution as a fraction of CSS pixels. Lower = chunkier
  *  pixels + less GPU. ~0.45 reads as a subtle pixel-art grain. */
@@ -63,8 +64,8 @@ export function Scene({
       <color attach="background" args={["#0a0807"]} />
       <fog attach="fog" args={["#0a0807", 9, 26]} />
 
-      <ambientLight intensity={0.06} color="#5a4a8f" />
-      <hemisphereLight intensity={0.05} color="#6b5a9a" groundColor="#1a120a" />
+      <ambientLight intensity={0.08} color={PALETTE.STONE_LIGHT} />
+      <hemisphereLight intensity={0.06} color={PALETTE.GEM} groundColor={PALETTE.CANDLE_WARM} />
 
       {/* Cold shaft from above that picks the grimoire out of the dark — a
           dark-fantasy "altar" key light on the book. */}
