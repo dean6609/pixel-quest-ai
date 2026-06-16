@@ -1,14 +1,20 @@
+// frontend/src/three/Room.tsx
 import { useMemo } from "react";
 import * as THREE from "three";
+import { PALETTE } from "./palette";
 
 /**
  * A dim stone chamber: floor, back and side walls where the grimoire floats
  * at its centre. Geometry is deliberately simple — atmosphere comes from the
- * lighting and postprocessing, not polygon count.
+ * lighting, palette, and postprocessing, not polygon count.
  */
 export function Room() {
   const stone = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#1b1712", roughness: 1, metalness: 0 }),
+    () => new THREE.MeshStandardMaterial({ color: PALETTE.STONE_DARK, roughness: 1, metalness: 0 }),
+    [],
+  );
+  const stoneLit = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: PALETTE.STONE_LIGHT, roughness: 1, metalness: 0 }),
     [],
   );
 
@@ -18,8 +24,8 @@ export function Room() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, 0]} receiveShadow material={stone}>
         <planeGeometry args={[40, 40]} />
       </mesh>
-      {/* back wall */}
-      <mesh position={[0, 4, -9]} receiveShadow material={stone}>
+      {/* back wall — slightly lighter so the arch + book read against it */}
+      <mesh position={[0, 4, -9]} receiveShadow material={stoneLit}>
         <planeGeometry args={[40, 24]} />
       </mesh>
       {/* side walls, angled inward to frame the book */}
