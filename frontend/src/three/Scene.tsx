@@ -7,6 +7,7 @@ import { Arch } from "./Arch";
 import { Bookshelves } from "./Bookshelves";
 import { Table } from "./Table";
 import { Candles } from "./Candles";
+import { Props } from "./Props";
 import { DustParticles } from "./DustParticles";
 import { Grimoire, type PageProps } from "./Grimoire";
 import { Hourglass } from "./Hourglass";
@@ -85,6 +86,7 @@ export function Scene({
         <Grimoire open={bookOpen} agitation={agitation} reduced={reduced} onOpen={onBookClick} pages={pages} />
         <Hourglass onClick={onHourglassClick} />
         <Candles agitation={agitation} />
+        <Props />
         <DustParticles pull={agitation} />
       </Suspense>
 
