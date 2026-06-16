@@ -6,9 +6,10 @@ import type { Message } from "../lib/types";
 import { ChatPanel } from "../ui/ChatPanel";
 import { ReasoningStream } from "../ui/ReasoningStream";
 import { InkInput } from "../ui/InkInput";
+import { PALETTE } from "./palette";
 
-const COVER = "#3b1d12";
-const PAGE = "#e9dcb8";
+const COVER = PALETTE.LEATHER;
+const PAGE = PALETTE.PARCHMENT;
 
 const FLOAT_Y = 1.55; // floating, closed, centre
 const TABLE_Y = 0.55; // resting open, propped above the table
@@ -43,8 +44,8 @@ interface Props {
   pages: PageProps;
 }
 
-const GOLD = "#9c7b3a";
-const GEM = "#6a1f33";
+const GOLD = PALETTE.GOLD;
+const GEM = PALETTE.GEM;
 const COVER_FACE = -(BLOCK_T / 2 + COVER_T); // outer surface of a leaf's cover
 
 /**
@@ -81,8 +82,17 @@ function CoverArt({ cx }: { cx: number }) {
       </mesh>
       <mesh position={[0, -0.06, 0]} rotation={[0, Math.PI / 4, 0]}>
         <octahedronGeometry args={[0.2, 0]} />
-        <meshStandardMaterial color={GEM} emissive="#400f1e" emissiveIntensity={0.6} metalness={0.3} roughness={0.3} />
+        <meshStandardMaterial
+          color={GEM}
+          emissive={PALETTE.GEM_BRIGHT}
+          emissiveIntensity={1.4}
+          metalness={0.3}
+          roughness={0.25}
+          toneMapped={false}
+        />
       </mesh>
+      {/* magenta glow cast by the gem */}
+      <pointLight position={[0, -0.4, 0]} color={PALETTE.GEM_BRIGHT} intensity={2.2} distance={3.5} decay={2} />
       {/* corner studs */}
       {([[ex, ez], [ex, -ez], [-ex, ez], [-ex, -ez]] as const).map(([sx, sz], i) => (
         <mesh key={i} position={[sx, 0, sz]} material={gilt}>
@@ -174,7 +184,12 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
             gutter reads as a leather strip rather than a dark groove */}
         <mesh position={[0, 0, 0]} castShadow>
           <boxGeometry args={[HINGE_X * 2, BLOCK_T, D + 0.14]} />
-          <meshStandardMaterial color="#5a3320" roughness={0.7} metalness={0.08} emissive="#2a160c" emissiveIntensity={0.18} />
+          <meshStandardMaterial color={PALETTE.RIBBON} roughness={0.7} metalness={0.08} emissive="#1a0f2a" emissiveIntensity={0.2} />
+        </mesh>
+        {/* violet bookmark ribbon hanging from the spine, past the page edge */}
+        <mesh position={[0, -BLOCK_T / 2 - 0.4, D / 2 + 0.05]}>
+          <boxGeometry args={[0.22, 0.9, 0.02]} />
+          <meshStandardMaterial color={PALETTE.RIBBON} emissive={PALETTE.GEM} emissiveIntensity={0.12} roughness={0.6} side={THREE.DoubleSide} />
         </mesh>
 
         {/* LEFT leaf (model's page) — hinged at -HINGE_X, extends -X when open */}
