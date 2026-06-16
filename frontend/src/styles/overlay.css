@@ -66,6 +66,31 @@
 .page--right { display: flex; flex-direction: column; justify-content: flex-end; }
 .page .chat-panel { max-height: 18rem; }
 
+/* faint gilt inset frame on each open page */
+.page {
+  position: relative;
+  padding: 0.6rem 0.8rem;
+}
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0.15rem;
+  border: 1px solid rgba(212, 162, 58, 0.35); /* PALETTE.GOLD @ low alpha */
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* illuminated drop-cap on the opening prompt */
+.chat-panel--empty .chat-panel__prompt::first-letter {
+  font-family: var(--serif-display);
+  font-size: 2.6em;
+  font-weight: 600;
+  float: left;
+  line-height: 0.8;
+  padding: 0.05em 0.12em 0 0;
+  color: var(--ember);
+}
+
 /* ---- conversation scroll area ---- */
 .chat-panel {
   overflow-y: auto;
