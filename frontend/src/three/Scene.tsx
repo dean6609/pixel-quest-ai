@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { Room } from "./Room";
+import { Arch } from "./Arch";
 import { Table } from "./Table";
 import { Candles } from "./Candles";
 import { DustParticles } from "./DustParticles";
@@ -77,6 +78,7 @@ export function Scene({
 
       <Suspense fallback={null}>
         <Room />
+        <Arch />
         <Table />
         <Grimoire open={bookOpen} agitation={agitation} reduced={reduced} onOpen={onBookClick} pages={pages} />
         <Hourglass onClick={onHourglassClick} />
