@@ -1,34 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatProvider, useChat } from "./state/ChatContext";
 import { Scene } from "./three/Scene";
-import { ChatPanel } from "./ui/ChatPanel";
-import { ReasoningStream } from "./ui/ReasoningStream";
-import { InkInput } from "./ui/InkInput";
-import { HourglassButton } from "./ui/HourglassButton";
 import { HistoryDrawer } from "./ui/HistoryDrawer";
+import type { RenderPhase } from "./three/render/framePolicy";
 import "./styles/overlay.css";
 
 function Grimoire() {
   const {
     messages, reasoning, phase, historyOpen,
-    send, loadConversation, toggleHistory, skipIntro, introDone,
+    send, loadConversation, openBook, toggleHistory, skipIntro, introDone,
   } = useChat();
 
-  const [skip, setSkip] = useState(false);
+  const [skip, setSkip] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [revision, setRevision] = useState(0);
   const prevPhase = useRef(phase);
 
-  // With reduced motion the camera fly-in is suppressed, so advance straight
-  // past the intro to the open grimoire on first load.
+  // Reduced motion: skip the cinematic fly-in (the book still floats closed and
+  // is opened by click) so the scene starts calm.
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setSkip(true);
-      skipIntro();
-    }
+    if (skip) skipIntro();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // After each thinking→idle transition a conversation was just saved; refresh history.
+  // After each thinking→idle transition a conversation was just saved; refresh.
   useEffect(() => {
     if (prevPhase.current === "thinking" && phase === "idle") {
       setRevision(r => r + 1);
@@ -37,6 +33,7 @@ function Grimoire() {
   }, [phase]);
 
   const thinking = phase === "thinking";
+  const bookOpen = phase === "idle" || phase === "thinking";
   const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
   const hasAnswer = !!lastAssistant?.content;
 
@@ -45,43 +42,46 @@ function Grimoire() {
   return (
     <>
       <Scene
-        phase={phase}
-        bookOpen={phase !== "intro"}
+        phase={phase as RenderPhase}
+        bookOpen={bookOpen}
         skip={skip}
         onIntroDone={introDone}
+        onBookClick={openBook}
+        onHourglassClick={toggleHistory}
+        pages={{
+          messages, reasoning, thinking, hasAnswer,
+          inputDisabled: thinking, onSubmit: send,
+        }}
       />
 
       {phase === "intro" && (
         <button className="skip-intro" onClick={handleSkip}>
-          abrir el grimorio →
+          saltar la intro →
         </button>
       )}
 
-      {phase !== "intro" && (
-        <>
-          <div className="tools">
-            <HourglassButton open={historyOpen} onToggle={toggleHistory} />
-          </div>
-
-          <div className="overlay">
-            <section className="codex">
-              <ChatPanel messages={messages} thinking={thinking} />
-              <ReasoningStream reasoning={reasoning} hasAnswer={hasAnswer} thinking={thinking} />
-            </section>
-            <div className="composer">
-              <InkInput onSubmit={send} disabled={thinking} />
-            </div>
-          </div>
-
-          <HistoryDrawer
-            open={historyOpen}
-            revision={revision}
-            onSelect={loadConversation}
-            onClose={toggleHistory}
-            onChanged={() => setRevision(r => r + 1)}
-          />
-        </>
+      {/* Accessible twin: the floating book is opened by clicking the mesh; this
+          gives keyboard users and tests a real focusable control. */}
+      {phase === "closed" && (
+        <button className="open-book-hint" onClick={openBook}>
+          abrir el grimorio
+        </button>
       )}
+
+      {/* Accessible twin for the 3D hourglass. */}
+      {bookOpen && (
+        <button className="sr-only" onClick={toggleHistory} aria-pressed={historyOpen}>
+          Conversaciones pasadas
+        </button>
+      )}
+
+      <HistoryDrawer
+        open={historyOpen}
+        revision={revision}
+        onSelect={loadConversation}
+        onClose={toggleHistory}
+        onChanged={() => setRevision(r => r + 1)}
+      />
     </>
   );
 }
