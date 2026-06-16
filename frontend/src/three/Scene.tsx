@@ -63,6 +63,18 @@ export function Scene({
       <ambientLight intensity={0.06} color="#5a4a8f" />
       <hemisphereLight intensity={0.05} color="#6b5a9a" groundColor="#1a120a" />
 
+      {/* Cold shaft from above that picks the grimoire out of the dark — a
+          dark-fantasy "altar" key light on the book. */}
+      <spotLight
+        position={[0, 7, 1.5]}
+        angle={0.5}
+        penumbra={0.8}
+        decay={1.5}
+        distance={26}
+        intensity={45}
+        color="#b9b0ff"
+      />
+
       <Suspense fallback={null}>
         <Room />
         <Table />

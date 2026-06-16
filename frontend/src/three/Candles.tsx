@@ -10,8 +10,8 @@ interface Props {
 // [x, y, z, castShadow] — only the two front candles cast shadows to keep the
 // one-time shadow render cheap; the back pair light without casting.
 const CANDLES: [number, number, number, boolean][] = [
-  [-3.4, -0.5, 1.2, true],
-  [3.4, -0.5, 1.0, true],
+  [-2.9, -0.05, 1.5, true], // standing on the desk, front-left of the book
+  [2.9, -0.05, 1.4, true], //  standing on the desk, front-right of the book
   [-2.0, 1.6, -6.5, false],
   [2.2, 1.4, -6.5, false],
 ];

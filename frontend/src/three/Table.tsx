@@ -8,7 +8,7 @@ import * as THREE from "three";
  */
 export function Table() {
   const timber = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#2a1d11", roughness: 0.85, metalness: 0.05 }),
+    () => new THREE.MeshStandardMaterial({ color: "#4a3320", roughness: 0.8, metalness: 0.05 }),
     [],
   );
   const leg: [number, number, number][] = [

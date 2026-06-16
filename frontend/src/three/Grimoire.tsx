@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -11,7 +11,10 @@ const COVER = "#3b1d12";
 const PAGE = "#e9dcb8";
 
 const FLOAT_Y = 1.55; // floating, closed, centre
-const TABLE_Y = -0.25; // resting open on the table
+const TABLE_Y = 0.55; // resting open, propped above the table
+// Open, the spread tilts up so the pages face the reading camera instead of
+// lying flat (top-down) on the table — like a grimoire on a lectern.
+const OPEN_TILT = 0.85;
 
 // Book proportions (local "open-flat" reference frame: pages in the XZ plane,
 // facing +Y, spine running along Z at x = 0, leaves splaying along ±X).
@@ -38,6 +41,56 @@ interface Props {
   reduced: boolean;
   onOpen: () => void;
   pages: PageProps;
+}
+
+const GOLD = "#9c7b3a";
+const GEM = "#6a1f33";
+const COVER_FACE = -(BLOCK_T / 2 + COVER_T); // outer surface of a leaf's cover
+
+/**
+ * Tarnished-gilt ornament laid flat on a leaf's outer cover (centred at x = cx):
+ * an inset border, a central sigil ring + gemstone, and corner studs — the
+ * dark-fantasy face the closed grimoire presents to the reader.
+ */
+function CoverArt({ cx }: { cx: number }) {
+  const y = COVER_FACE - 0.02; // sit just proud of the leather
+  const ex = LEAF_W / 2 - 0.3; // border half-width (X)
+  const ez = D / 2 - 0.3; // border half-depth (Z)
+  const gilt = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: GOLD, metalness: 0.75, roughness: 0.35, emissive: new THREE.Color("#3a2c10"), emissiveIntensity: 0.3 }),
+    [],
+  );
+  return (
+    <group position={[cx, y, 0]}>
+      {/* inset border frame */}
+      <mesh position={[0, 0, ez]} material={gilt}>
+        <boxGeometry args={[ex * 2, 0.05, 0.08]} />
+      </mesh>
+      <mesh position={[0, 0, -ez]} material={gilt}>
+        <boxGeometry args={[ex * 2, 0.05, 0.08]} />
+      </mesh>
+      <mesh position={[ex, 0, 0]} material={gilt}>
+        <boxGeometry args={[0.08, 0.05, ez * 2]} />
+      </mesh>
+      <mesh position={[-ex, 0, 0]} material={gilt}>
+        <boxGeometry args={[0.08, 0.05, ez * 2]} />
+      </mesh>
+      {/* central sigil: a ring around a faceted gem */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} material={gilt}>
+        <torusGeometry args={[0.34, 0.045, 8, 28]} />
+      </mesh>
+      <mesh position={[0, -0.06, 0]} rotation={[0, Math.PI / 4, 0]}>
+        <octahedronGeometry args={[0.2, 0]} />
+        <meshStandardMaterial color={GEM} emissive="#400f1e" emissiveIntensity={0.6} metalness={0.3} roughness={0.3} />
+      </mesh>
+      {/* corner studs */}
+      {([[ex, ez], [ex, -ez], [-ex, ez], [-ex, -ez]] as const).map(([sx, sz], i) => (
+        <mesh key={i} position={[sx, 0, sz]} material={gilt}>
+          <icosahedronGeometry args={[0.07, 0]} />
+        </mesh>
+      ))}
+    </group>
+  );
 }
 
 /**
@@ -75,7 +128,8 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
       const sway = open || reduced ? 0 : Math.sin(t * 0.5) * 0.12;
       // closed: turned -90° so the front cover faces the camera; open: square.
       root.current.rotation.y = THREE.MathUtils.lerp(-Math.PI / 2, 0, o) + sway;
-      root.current.rotation.x = THREE.MathUtils.lerp(0.05, 0, o);
+      // closed: a slight forward lean; open: tilt the spread up to face the reader.
+      root.current.rotation.x = THREE.MathUtils.lerp(0.05, OPEN_TILT, o);
     }
 
     // Re-centre the upright closed book on the look point (its leaves grow +Y).
@@ -133,6 +187,7 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
             <boxGeometry args={[LEAF_W, BLOCK_T, D]} />
             <meshStandardMaterial color={PAGE} roughness={0.9} emissive="#caa45f" emissiveIntensity={0.1} />
           </mesh>
+          <CoverArt cx={-LEAF_W / 2} />
           {open && (
             <Html
               transform
@@ -160,6 +215,7 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
             <boxGeometry args={[LEAF_W, BLOCK_T, D]} />
             <meshStandardMaterial color={PAGE} roughness={0.9} emissive="#caa45f" emissiveIntensity={0.1} />
           </mesh>
+          <CoverArt cx={LEAF_W / 2} />
           {open && (
             <Html
               transform

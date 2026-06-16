@@ -16,9 +16,9 @@ const START = new THREE.Vector3(0, 6.5, 16);
 // Facing the closed book floating at centre.
 const FLOAT_POS = new THREE.Vector3(0, 1.7, 6.6);
 const FLOAT_LOOK = new THREE.Vector3(0, 1.4, 0);
-// Descended, tilted down over the open book on the table.
-const READ_POS = new THREE.Vector3(0, 2.4, 4.4);
-const READ_LOOK = new THREE.Vector3(0, -0.2, -0.3);
+// Settled in front of the propped-open book so the pages read head-on.
+const READ_POS = new THREE.Vector3(0, 1.05, 5.4);
+const READ_LOOK = new THREE.Vector3(0, 0.55, -0.1);
 
 /**
  * Drives the camera. On first load it flies from a high vantage down to the
