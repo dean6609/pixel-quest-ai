@@ -4,6 +4,7 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { Room } from "./Room";
 import { Arch } from "./Arch";
+import { Bookshelves } from "./Bookshelves";
 import { Table } from "./Table";
 import { Candles } from "./Candles";
 import { DustParticles } from "./DustParticles";
@@ -79,6 +80,7 @@ export function Scene({
       <Suspense fallback={null}>
         <Room />
         <Arch />
+        <Bookshelves />
         <Table />
         <Grimoire open={bookOpen} agitation={agitation} reduced={reduced} onOpen={onBookClick} pages={pages} />
         <Hourglass onClick={onHourglassClick} />
