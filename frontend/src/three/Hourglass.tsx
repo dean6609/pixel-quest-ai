@@ -27,7 +27,7 @@ export function Hourglass({ onClick }: Props) {
   return (
     <group
       ref={group}
-      position={[2.8, -0.05, 0.5]}
+      position={[2.8, 0.12, 0.5]}
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
       onPointerOut={() => { setHovered(false); document.body.style.cursor = "auto"; }}

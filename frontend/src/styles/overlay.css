@@ -50,37 +50,8 @@
 }
 .open-book-hint:hover { opacity: 1; }
 
-/* ---- a single open page rendered inside a drei <Html> plane ---- */
-.page {
-  width: 320px;
-  color: var(--ink);
-  font-family: var(--serif-body);
-  font-size: 1.02rem;
-  line-height: 1.6;
-  /* The parchment itself is the 3D mesh; keep the DOM transparent so only
-     ink shows on the page. */
-  background: transparent;
-  user-select: text;
-}
-.page--left { /* model: conversation + reasoning */ }
-.page--right { display: flex; flex-direction: column; justify-content: flex-end; }
-.page .chat-panel { max-height: 18rem; }
-
-/* faint gilt inset frame on each open page */
-.page {
-  position: relative;
-  padding: 0.6rem 0.8rem;
-}
-.page::before {
-  content: "";
-  position: absolute;
-  inset: 0.15rem;
-  border: 1px solid rgba(212, 162, 58, 0.35); /* PALETTE.GOLD @ low alpha */
-  border-radius: 2px;
-  pointer-events: none;
-}
-
-/* illuminated drop-cap on the opening prompt */
+/* illuminated drop-cap on the opening prompt (shown in the reading panel's
+   empty state, before the first question) */
 .chat-panel--empty .chat-panel__prompt::first-letter {
   font-family: var(--serif-display);
   font-size: 2.6em;
@@ -376,4 +347,98 @@
   font-size: 1.15rem;
   color: var(--parchment);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
+}
+
+/* ===========================================================================
+   Flat reading panel — the legible, head-on conversation surface that appears
+   when the grimoire opens. The 3D book opens behind it as atmosphere.
+   =========================================================================== */
+.reading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  /* darken the centre so the parchment card pops; transparent at the edges so
+     the dungeon, props, and book still read around it */
+  background: radial-gradient(ellipse at center, rgba(10, 8, 7, 0.62) 0%, rgba(10, 8, 7, 0) 72%);
+  /* the backdrop never steals clicks — only the card does — so the 3D
+     hourglass stays interactive */
+  pointer-events: none;
+  animation: ink-bleed 0.6s ease both;
+}
+
+.reading-card {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: min(640px, 94vw);
+  max-height: min(82vh, 760px);
+  padding: 1.5rem 1.7rem;
+  color: var(--ink);
+  font-family: var(--serif-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 244, 214, 0.7), rgba(0, 0, 0, 0) 60%),
+    var(--parchment);
+  border: 1px solid rgba(212, 162, 58, 0.5);
+  border-radius: 6px;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.6),
+    inset 0 0 70px rgba(120, 90, 40, 0.14);
+}
+/* faint gilt inset frame, echoing the grimoire's cover ornament */
+.reading-card::before {
+  content: "";
+  position: absolute;
+  inset: 0.5rem;
+  border: 1px solid rgba(212, 162, 58, 0.3);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* conversation + reasoning scroll together; the input stays pinned below */
+.reading-card__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-right: 0.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-faint) transparent;
+}
+.reading-card__scroll .chat-panel {
+  overflow: visible;
+  max-height: none;
+}
+.reading-card .ink-input { flex: 0 0 auto; }
+
+/* ---- markdown tables (GFM) rendered in assistant answers ---- */
+.bubble__body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.4em 0 0.7em;
+  font-size: 0.92em;
+}
+.bubble__body th,
+.bubble__body td {
+  border: 1px solid var(--rule);
+  padding: 0.32em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+.bubble__body th {
+  background: rgba(90, 64, 38, 0.14);
+  font-weight: 600;
+  font-family: var(--serif-display);
+}
+.bubble__body tr:nth-child(even) td {
+  background: rgba(90, 64, 38, 0.05);
 }

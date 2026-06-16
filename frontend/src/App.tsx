@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatProvider, useChat } from "./state/ChatContext";
 import { Scene } from "./three/Scene";
+import { ReadingPanel } from "./ui/ReadingPanel";
 import { HistoryDrawer } from "./ui/HistoryDrawer";
 import type { RenderPhase } from "./three/render/framePolicy";
 import "./styles/overlay.css";
@@ -53,10 +54,16 @@ function Grimoire() {
         onIntroDone={introDone}
         onBookClick={openBook}
         onHourglassClick={toggleHistory}
-        pages={{
-          messages, reasoning, thinking, hasAnswer,
-          inputDisabled: thinking, onSubmit: send,
-        }}
+      />
+
+      <ReadingPanel
+        open={bookOpen}
+        messages={messages}
+        reasoning={reasoning}
+        thinking={thinking}
+        hasAnswer={hasAnswer}
+        inputDisabled={thinking}
+        onSubmit={send}
       />
 
       {phase === "intro" && (

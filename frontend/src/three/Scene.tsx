@@ -9,7 +9,7 @@ import { Table } from "./Table";
 import { Candles } from "./Candles";
 import { Props } from "./Props";
 import { DustParticles } from "./DustParticles";
-import { Grimoire, type PageProps } from "./Grimoire";
+import { Grimoire } from "./Grimoire";
 import { Hourglass } from "./Hourglass";
 import { CameraRig } from "./CameraRig";
 import { FrameLoopController } from "./FrameLoopController";
@@ -28,7 +28,6 @@ interface Props {
   onIntroDone: () => void;
   onBookClick: () => void;
   onHourglassClick: () => void;
-  pages: PageProps;
 }
 
 /** Subscribe to the prefers-reduced-motion media query. */
@@ -45,7 +44,7 @@ function usePrefersReducedMotion(): boolean {
 }
 
 export function Scene({
-  phase, bookOpen, skip, onIntroDone, onBookClick, onHourglassClick, pages,
+  phase, bookOpen, skip, onIntroDone, onBookClick, onHourglassClick,
 }: Props) {
   const thinking = phase === "thinking";
   const agitation = thinking ? 1 : 0;
@@ -84,7 +83,7 @@ export function Scene({
         <Arch />
         <Bookshelves />
         <Table />
-        <Grimoire open={bookOpen} agitation={agitation} reduced={reduced} onOpen={onBookClick} pages={pages} />
+        <Grimoire open={bookOpen} agitation={agitation} reduced={reduced} onOpen={onBookClick} />
         <Hourglass onClick={onHourglassClick} />
         <Candles agitation={agitation} />
         <Props />

@@ -1,18 +1,13 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
-import type { Message } from "../lib/types";
-import { ChatPanel } from "../ui/ChatPanel";
-import { ReasoningStream } from "../ui/ReasoningStream";
-import { InkInput } from "../ui/InkInput";
 import { PALETTE } from "./palette";
 
 const COVER = PALETTE.LEATHER;
 const PAGE = PALETTE.PARCHMENT;
 
 const FLOAT_Y = 1.55; // floating, closed, centre
-const TABLE_Y = 0.55; // resting open, propped above the table
+const TABLE_Y = 0.95; // resting open, propped above the table (clear of the table lip)
 // Open, the spread tilts up so the pages face the reading camera instead of
 // lying flat (top-down) on the table — like a grimoire on a lectern.
 const OPEN_TILT = 0.85;
@@ -24,24 +19,12 @@ const LEAF_W = 2.0; // cover/page width along X when the book is open
 const COVER_T = 0.12; // cover board thickness
 const BLOCK_T = 0.34; // page-stack thickness — gives the closed book its heft
 const HINGE_X = 0.2; // half the spine width; where each leaf is hinged
-const SURFACE_Y = BLOCK_T / 2 + 0.015; // top of the page stack (where ink sits)
-
-/** Everything the open pages need to render the conversation. */
-export interface PageProps {
-  messages: Message[];
-  reasoning: string;
-  thinking: boolean;
-  hasAnswer: boolean;
-  inputDisabled: boolean;
-  onSubmit: (q: string) => void;
-}
 
 interface Props {
   open: boolean;
   agitation?: number;
   reduced: boolean;
   onOpen: () => void;
-  pages: PageProps;
 }
 
 const GOLD = PALETTE.GOLD;
@@ -107,10 +90,11 @@ function CoverArt({ cx }: { cx: number }) {
  * The grimoire. Each side is a "leaf" (outer cover + page stack) hinged on the
  * spine axis (Z). Closed, both leaves stand upright and fold together into a
  * thick tome whose cover faces the camera; clicking it turns the book square,
- * lowers it to the table, and splays the leaves flat so the anchored <Html>
- * pages (left = model, right = you) lie face-up under the reading camera.
+ * lowers it onto the table, and splays the leaves open. The conversation itself
+ * renders in the flat <ReadingPanel> overlay; the open book is the atmosphere
+ * behind it.
  */
-export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props) {
+export function Grimoire({ open, agitation = 0, reduced, onOpen }: Props) {
   const root = useRef<THREE.Group>(null);
   const centre = useRef<THREE.Group>(null);
   const leftLeaf = useRef<THREE.Group>(null);
@@ -203,21 +187,6 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
             <meshStandardMaterial color={PAGE} roughness={0.9} emissive="#caa45f" emissiveIntensity={0.1} />
           </mesh>
           <CoverArt cx={-LEAF_W / 2} />
-          {open && (
-            <Html
-              transform
-              position={[-LEAF_W / 2, SURFACE_Y, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              distanceFactor={2.4}
-              occlude={false}
-              pointerEvents="auto"
-            >
-              <div className="page page--left">
-                <ChatPanel messages={pages.messages} thinking={pages.thinking} />
-                <ReasoningStream reasoning={pages.reasoning} hasAnswer={pages.hasAnswer} thinking={pages.thinking} />
-              </div>
-            </Html>
-          )}
         </group>
 
         {/* RIGHT leaf (your input) — hinged at +HINGE_X, extends +X when open */}
@@ -231,20 +200,6 @@ export function Grimoire({ open, agitation = 0, reduced, onOpen, pages }: Props)
             <meshStandardMaterial color={PAGE} roughness={0.9} emissive="#caa45f" emissiveIntensity={0.1} />
           </mesh>
           <CoverArt cx={LEAF_W / 2} />
-          {open && (
-            <Html
-              transform
-              position={[LEAF_W / 2, SURFACE_Y, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              distanceFactor={2.4}
-              occlude={false}
-              pointerEvents="auto"
-            >
-              <div className="page page--right">
-                <InkInput onSubmit={pages.onSubmit} disabled={pages.inputDisabled} />
-              </div>
-            </Html>
-          )}
         </group>
 
         {/* mystical glow rising from the spread */}

@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import type { Message } from "../lib/types";
 
@@ -34,7 +35,7 @@ export function ChatPanel({ messages, thinking }: Props) {
                   <i /><i /><i />
                 </span>
               ) : (
-                <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
                   {m.content}
                 </ReactMarkdown>
               )}
