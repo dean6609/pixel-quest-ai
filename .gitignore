@@ -7,6 +7,10 @@
 # The data is fetched via sync; commit only if intentional
 data/*.json
 
+# ─── Node / JavaScript ────────────────────────────────────────────────────────
+# The Node app lives in frontend/; never expect node_modules at the repo root.
+node_modules/
+
 # ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
