@@ -5,8 +5,9 @@
 *Un asistente inteligente potenciado por RAG (Retrieval-Augmented Generation) para el MMORPG **Pixel Quest**.*
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Three.js](https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![DeepSeek](https://img.shields.io/badge/AI-DeepSeek-blue?style=for-the-badge)](https://deepseek.com/)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 
@@ -20,7 +21,7 @@
 
 *   🔍 **Búsqueda Dinámica**: El motor RAG utiliza *Function Calling* para explorar la base de datos de manera precisa, sin alucinaciones.
 *   🤖 **Chat Multilingüe**: Gracias al potente motor de DeepSeek, comprende lenguaje natural en múltiples idiomas y traduce tu intención en filtros de búsqueda exactos (ej. *"arco inicial"* $\rightarrow$ *"Bow, Tier 1"*).
-*   🌐 **Web App Moderna**: Interfaz frontend elegante, construida con **Next.js** y **React**, servida a través de un backend asíncrono con **FastAPI**.
+*   🌐 **Web App Inmersiva**: Interfaz frontend 3D (un grimorio de fantasía oscura) construida con **Vite + React + React Three Fiber**, servida a través de un backend asíncrono con **FastAPI**.
 *   🔄 **Sincronización Automática**: Scripts integrados para descargar y extraer automáticamente los datos más recientes del wiki del juego.
 
 ## 🛠️ Stack Tecnológico
@@ -30,7 +31,9 @@
 | **Backend** | `FastAPI` + `Uvicorn` | API rápida y asíncrona para servir el contenido. |
 | **IA / LLM** | `DeepSeek Chat (API)` | Motor de inteligencia artificial principal. |
 | **Búsqueda** | `RAG` + `Function Calling` | Recuperación de información exacta. |
-| **Frontend** | `Next.js 15`, `React 19`, `Tailwind CSS v4`, `Turbopack` | Interfaz reconstruida con estética Good Fella Studio. |
+| **Frontend** | `Vite 8`, `React 19`, `TypeScript` | Bundler y SPA. Build estático servido por FastAPI. |
+| **Escena 3D** | `React Three Fiber`, `@react-three/drei`, `postprocessing`, `three.js` | Grimorio de fantasía oscura interactivo. |
+| **Contenido** | `react-markdown` + `remark-gfm` | Renderizado de respuestas en las páginas del libro. |
 | **Datos** | `JSON` | Sincronizados vía web scraping del wiki. |
 
 ---
@@ -70,12 +73,12 @@ cp .env.example .env
 > [!IMPORTANT]
 > Edita el archivo `.env` y añade tu `DEEPSEEK_API_KEY`. Puedes obtenerla en [platform.deepseek.com](https://platform.deepseek.com/).
 
-### 4. Preparar el Frontend (Next.js)
-El frontend debe ser compilado de forma estática para que FastAPI pueda servirlo:
+### 4. Preparar el Frontend (Vite + React)
+El frontend se compila de forma estática (a `frontend/dist/`) para que FastAPI pueda servirlo:
 ```bash
 cd frontend
 npm install
-npm run build
+npm run build   # tsc -b && vite build  →  genera frontend/dist
 cd ..
 ```
 
@@ -92,7 +95,7 @@ python web_app.py
 ```
 > 🌟 **¡Listo!** Abre [http://localhost:8080](http://localhost:8080) en tu navegador para empezar a usar la aplicación.
 >
-> Para desarrollo frontend con hot-reload rápido: `cd frontend && npm run dev` (usa Turbopack).
+> Para desarrollo frontend con hot-reload rápido: `cd frontend && npm run dev` (servidor de desarrollo de Vite).
 
 ---
 
@@ -148,15 +151,26 @@ pixel-quest-ai/
 │   ├── deepseek_rag.py     # Integración de IA y Function Calling
 │   └── cli.py              # Comandos de terminal
 │
-├── frontend/               # Código fuente Next.js + React
+├── frontend/               # Código fuente Vite + React + R3F
+│   ├── index.html          # Punto de entrada HTML
+│   ├── vite.config.ts      # Configuración de Vite
+│   ├── public/             # Estáticos servidos tal cual
 │   ├── src/
-│   │   ├── app/            # Layout, página principal, fonts
-│   │   ├── components/     # 15 componentes React
-│   │   ├── context/        # ChatContext (estado global del chat)
-│   │   └── lib/            # Utilidades y animaciones
-│   └── tests/              # Tests E2E con Playwright
+│   │   ├── main.tsx        # Bootstrap de React
+│   │   ├── App.tsx         # Componente raíz (escena + overlay UI)
+│   │   ├── three/          # Escena 3D (React Three Fiber): Scene, Grimoire,
+│   │   │   │               #   Room, Arch, Bookshelves, Props, Candles,
+│   │   │   │               #   Hourglass, CameraRig, palette, Table…
+│   │   │   └── render/     # Política de frames (dieta de GPU)
+│   │   ├── ui/             # Overlay HTML: ChatPanel, HistoryDrawer,
+│   │   │                   #   InkInput, ReadingPanel, ReasoningStream
+│   │   ├── state/          # ChatContext + sceneState (estado global)
+│   │   ├── lib/            # streamClient (SSE), history, types
+│   │   ├── styles/         # overlay.css
+│   │   └── assets/         # Imágenes (hero, logos)
+│   └── e2e/                # Tests E2E con Playwright (grimoire.spec.ts)
 │
-└── data/                   # Archivos JSON sincronizados del wiki
+└── data/                   # Archivos JSON sincronizados del wiki (no versionados)
     ├── items.json
     ├── enemies.json
     ├── locations.json

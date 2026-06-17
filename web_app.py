@@ -1,4 +1,4 @@
-"""Pixel Quest AI - Web Frontend (serving static Next.js export)."""
+"""Pixel Quest AI - Web Frontend (serving static Vite + React build)."""
 import sys, os, json, logging, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -171,7 +171,7 @@ else:
     logger.warning("Frontend build not found. Run `npm run build` in frontend directory.")
     @app.get("/", response_class=HTMLResponse)
     def index():
-        return HTMLResponse(content="<h1>Frontend build not found. Please build the Next.js app.</h1>")
+        return HTMLResponse(content="<h1>Frontend build not found. Run `npm run build` in the frontend directory.</h1>")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
